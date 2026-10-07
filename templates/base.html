@@ -1,0 +1,71 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#020805">
+  <meta name="site-release" content="es-sponsorship-v6">
+  <meta name="description" content="{{ site_name }} — a student-built electric Formula SAE team.">
+  <title>{% block title %}{{ site_name }} | Electric Formula SAE{% endblock %}</title>
+  <link rel="icon" type="image/webp" href="{% static 'images/electric-sting-mascot-v4.webp' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/site-v5.css' %}">
+  <script src="{% static 'js/site-v5.js' %}" defer></script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <div class="topline">
+    <div class="wrap topline-inner">
+      <span class="topline-identity"><span class="pulse-dot"></span>{{ school_name }} / STUDENT FORMULA SAE PROGRAM</span>
+      <nav class="topline-links" aria-label="Utility navigation">
+        <a href="{% url 'contact' %}">Join the team</a>
+        <a href="{% url 'events' %}">Experience the build</a>
+        <a href="{% url 'sponsors' %}">Give</a>
+      </nav>
+    </div>
+  </div>
+  <header class="site-header" data-header>
+    <div class="wrap nav-wrap">
+      <a class="brand" href="{% url 'home' %}" aria-label="{{ site_name }} home">
+        <span class="brand-mark" aria-hidden="true"><img src="{% static 'images/electric-sting-mascot-v4.webp' %}" alt="" width="2048" height="1373"></span>
+        <span class="brand-copy"><strong>{{ site_name }}</strong><small>{{ school_name }} / FORMULA SAE ELECTRIC</small></span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+        <span></span><span></span><span></span><span class="sr-only" data-menu-label>Open navigation</span>
+      </button>
+      <nav id="primary-nav" class="primary-nav" data-nav aria-label="Primary navigation">
+        <a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}>Home</a>
+        <a href="{% url 'roster' %}" {% if request.resolver_match.url_name == 'roster' %}aria-current="page"{% endif %}>Team</a>
+        <a href="{% url 'cars' %}" {% if request.resolver_match.url_name == 'cars' or request.resolver_match.url_name == 'car-detail' %}aria-current="page"{% endif %}>Car</a>
+        <a href="{% url 'gallery' %}" {% if request.resolver_match.url_name == 'gallery' %}aria-current="page"{% endif %}>Gallery</a>
+        <a href="{% url 'events' %}" {% if request.resolver_match.url_name == 'events' %}aria-current="page"{% endif %}>Calendar</a>
+        <a href="{% url 'sponsors' %}" class="nav-cta" {% if request.resolver_match.url_name == 'sponsors' %}aria-current="page"{% endif %}>Sponsor <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="{% url 'home' %}"><span class="brand-mark" aria-hidden="true"><img src="{% static 'images/electric-sting-mascot-v4.webp' %}" alt="" width="2048" height="1373"></span><span class="brand-copy"><strong>{{ site_name }}</strong><small>{{ school_name }} / FORMULA SAE ELECTRIC</small></span></a>
+        <p>Sacramento State's first electric Formula SAE team. Built from zero. Built to compete.</p>
+      </div>
+      <div class="footer-links">
+        <div><span class="eyebrow">Explore</span><a href="{% url 'roster' %}">The team</a><a href="{% url 'cars' %}">Car in development</a><a href="{% url 'gallery' %}">Gallery</a><a href="{% url 'events' %}">Events</a></div>
+        <div><span class="eyebrow">Connect</span><a href="{% url 'sponsors' %}">Sponsor the next build</a><a href="{% url 'contact' %}">Contact the team</a></div>
+      </div>
+      <div class="footer-meta"><span class="mono">{{ team_location }}</span><span class="mono">EST. 2025 // {{ team_season }}</span></div>
+    </div>
+    <div class="wrap footer-bottom"><span>© {% now "Y" %} {{ site_name }}</span><span>Built by students. Documented for the next team.</span></div>
+  </footer>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

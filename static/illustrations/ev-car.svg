@@ -1,0 +1,21 @@
+<svg width="900" height="430" viewBox="0 0 900 430" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Electric formula car silhouette</title>
+  <desc id="desc">A stylized dark electric formula race car with emerald and gold accents.</desc>
+  <defs>
+    <linearGradient id="body" x1="160" y1="150" x2="700" y2="330" gradientUnits="userSpaceOnUse"><stop stop-color="#45633A"/><stop offset=".55" stop-color="#173B22"/><stop offset="1" stop-color="#040504"/></linearGradient>
+    <linearGradient id="glow" x1="360" y1="300" x2="640" y2="240" gradientUnits="userSpaceOnUse"><stop stop-color="#3BE95E"/><stop offset="1" stop-color="#A7FF38"/></linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="14"/></filter>
+  </defs>
+  <ellipse cx="482" cy="340" rx="270" ry="22" fill="#3BE95E" opacity=".18" filter="url(#blur)"/>
+  <path d="M107 294C173 286 228 265 275 236L354 186L425 174L526 181L651 226L756 247L791 281L762 308L672 311L622 283L301 293L251 319H157L107 294Z" fill="url(#body)" stroke="#3BE95E" stroke-width="2"/>
+  <path d="M275 236L350 180L413 152L484 164L526 181L430 202L361 248L275 236Z" fill="#2F5F36" stroke="#A7FF38" stroke-opacity=".75" stroke-width="2"/>
+  <path d="M357 181L416 153L467 166L427 200L357 181Z" fill="#040504" stroke="#A7FF38" stroke-width="2"/>
+  <path d="M431 203L526 181L579 215L498 225L431 203Z" fill="#0B2414" stroke="#3BE95E" stroke-opacity=".5"/>
+  <path d="M153 279L300 268L356 248L498 225L622 259L738 264L767 282L699 290L654 269L294 282L248 299H159L153 279Z" fill="#040504"/>
+  <path d="M205 279L279 274L296 304H214L205 279ZM644 267L707 267L721 300H655L644 267Z" fill="#010402" stroke="#3BE95E" stroke-width="3"/>
+  <circle cx="254" cy="302" r="36" fill="#040504" stroke="#2F5F36" stroke-width="8"/><circle cx="254" cy="302" r="13" fill="#3BE95E" opacity=".62"/>
+  <circle cx="679" cy="301" r="39" fill="#040504" stroke="#2F5F36" stroke-width="8"/><circle cx="679" cy="301" r="14" fill="#3BE95E" opacity=".62"/>
+  <path d="M131 266L83 270L63 283L93 291L159 286M754 260L832 258L859 267L805 283L767 282" stroke="#A7FF38" stroke-width="4" stroke-linecap="round"/>
+  <path d="M320 270H625" stroke="url(#glow)" stroke-width="4" stroke-linecap="round"/>
+  <path d="M389 224L343 268M543 215L588 264" stroke="#3BE95E" stroke-opacity=".58" stroke-width="2"/>
+</svg>
