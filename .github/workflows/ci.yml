@@ -69,6 +69,7 @@ jobs:
           python scripts/verify_release.py
           node --test scripts/test_frontend.cjs
           bash scripts/test_restore_safety.sh
+          bash scripts/test_staging_smoke.sh
 
       - name: Check for missing migrations
         run: python manage.py makemigrations --check --dry-run
@@ -81,8 +82,8 @@ jobs:
           DJANGO_DEBUG: "False"
           DJANGO_SECURE_SSL_REDIRECT: "True"
           DJANGO_SECURE_HSTS_SECONDS: "31536000"
-          DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS: "False"
-          DJANGO_SECURE_HSTS_PRELOAD: "False"
+          DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS: "True"
+          DJANGO_SECURE_HSTS_PRELOAD: "True"
         run: python manage.py check --deploy --fail-level WARNING
 
       - name: Dependency audit
