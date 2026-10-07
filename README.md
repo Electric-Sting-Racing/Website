@@ -1,5 +1,7 @@
 # Electric Sting Racing
 
+For the restored sponsorship packages and public-page cleanup, start with [RELEASE-V6.md](RELEASE-V6.md). The neon theme, roster leads, scroll effects, mobile layout, and startup instructions are covered in [RELEASE-V5.md](RELEASE-V5.md).
+
 A maintainable Django site for Sacramento State's Formula SAE Electric team. It includes the public site, a Django admin, PostgreSQL production support, structured logs, a database health endpoint, and deployment checks.
 
 ## Local development
@@ -26,7 +28,9 @@ and should not be run against real team content.
 
 ## Production deployment
 
-Production settings fail closed: `DEBUG` defaults to false, a secret key and allowed hosts are required, and PostgreSQL is required. The settings support secret-manager-mounted files through `DJANGO_SECRET_KEY_FILE` and `DB_PASSWORD_FILE`.
+Production settings fail closed: `DEBUG` defaults to false, PostgreSQL and allowed hosts are required, and the Django secret key must be at least 50 characters. Example secret placeholders are rejected. The settings support secret-manager-mounted files through `DJANGO_SECRET_KEY_FILE` and `DB_PASSWORD_FILE`.
+
+`.env.example` leaves HSTS `includeSubDomains` and `preload` disabled because those settings require every subdomain to remain HTTPS-only. Enable them in a real deployment only after verifying that condition. CI separately checks a strict HTTPS deployment profile with both options enabled.
 
 Create the two local secret files only if your deployment host is not injecting them through a secret manager:
 
@@ -71,7 +75,7 @@ RESTORE_DATABASE_URL='postgresql://fsae_app:password@restore-host:5432/fsae_rest
 bash scripts/restore_test_postgres.sh
 ```
 
-The restore script refuses to use `DATABASE_URL` as its restore target when that variable is set. Do not point it at production.
+Before `pg_restore --clean`, the script checks the connected target database name. It must end in `_restore`; when `DATABASE_URL` is set, a target with the same database name is refused. Use a dedicated disposable database and do not point it at production.
 
 ## Observability and operations
 
@@ -84,14 +88,14 @@ The restore script refuses to use `DATABASE_URL` as its restore target when that
 
 ## CI and staging quality gates
 
-`.github/workflows/ci.yml` runs on pushes and pull requests. It provisions PostgreSQL, runs migrations and Django tests, runs `check --deploy --fail-level WARNING`, audits Python dependencies with `pip-audit`, verifies a backup/restore cycle, and builds the Docker image.
+`.github/workflows/ci.yml` runs on pushes and pull requests. It provisions PostgreSQL, runs migrations and Django tests, runs `check --deploy --fail-level WARNING` against a strict HTTPS profile, audits Python dependencies with `pip-audit`, verifies a backup/restore cycle, and builds the Docker image. It also runs dependency-free source, restore-safety, and staging-smoke checker tests.
 
-`.github/workflows/staging-audit.yml` is manually triggered with a public staging URL. It runs Lighthouse in three runs and asserts performance, LCP, CLS, and accessibility thresholds. It also runs axe-core for accessibility. Lighthouse lab data covers LCP and CLS; measure INP with real-user monitoring or field data before launch because lab runs cannot fully represent it.
+`.github/workflows/staging-audit.yml` is manually triggered with a public HTTPS staging URL. It first checks that the home page and database-backed `/healthz/` endpoint return successfully, then runs Lighthouse in three runs and axe-core accessibility checks. Lighthouse lab data covers LCP and CLS; measure INP with real-user monitoring or field data before launch because lab runs cannot fully represent it.
 
 Run the same checks locally when the relevant tools are installed:
 
 ```bash
-python manage.py check --deploy --fail-level WARNING
+DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS=True DJANGO_SECURE_HSTS_PRELOAD=True python manage.py check --deploy --fail-level WARNING
 npx --yes @lhci/cli@0.14.0 autorun --config=lighthouserc.json --collect.url=https://staging.example.com
 npx --yes @axe-core/cli@4.10.2 https://staging.example.com
 ```

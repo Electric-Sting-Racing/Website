@@ -1,0 +1,41 @@
+name: Staging audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      staging_url:
+        description: Public staging URL
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    env:
+      STAGING_URL: ${{ inputs.staging_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Staging deployment smoke tests
+        run: bash scripts/check_staging_smoke.sh
+
+      - name: Lighthouse and Core Web Vitals
+        run: npx --yes @lhci/cli@0.14.0 autorun --config=lighthouserc.json --collect.url="$STAGING_URL" --upload.target=filesystem
+
+      - name: Accessibility
+        run: npx --yes @axe-core/cli@4.10.2 "$STAGING_URL"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: staging-audit
+          path: artifacts/lighthouse
+          if-no-files-found: ignore
