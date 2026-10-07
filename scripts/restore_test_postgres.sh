@@ -9,9 +9,36 @@ if [[ ! -f "$BACKUP_FILE" ]]; then
   exit 1
 fi
 
-if [[ -n "${DATABASE_URL:-}" && "$RESTORE_DATABASE_URL" == "$DATABASE_URL" ]]; then
-  printf 'refusing to restore into DATABASE_URL; use a dedicated restore database\n' >&2
+target_database="$(
+  psql \
+    --no-psqlrc \
+    --dbname="$RESTORE_DATABASE_URL" \
+    --set=ON_ERROR_STOP=1 \
+    --tuples-only \
+    --no-align \
+    --command='SELECT current_database();'
+)"
+
+if [[ "$target_database" != *_restore ]]; then
+  printf 'refusing to restore: target database name must end in _restore\n' >&2
   exit 1
+fi
+
+if [[ -n "${DATABASE_URL:-}" ]]; then
+  production_database="$(
+    psql \
+      --no-psqlrc \
+      --dbname="$DATABASE_URL" \
+      --set=ON_ERROR_STOP=1 \
+      --tuples-only \
+      --no-align \
+      --command='SELECT current_database();'
+  )"
+
+  if [[ "$target_database" == "$production_database" ]]; then
+    printf 'refusing to restore: target database name matches DATABASE_URL\n' >&2
+    exit 1
+  fi
 fi
 
 pg_restore \
@@ -24,5 +51,5 @@ pg_restore \
   --single-transaction \
   "$BACKUP_FILE"
 
-psql "$RESTORE_DATABASE_URL" -v ON_ERROR_STOP=1 -c 'SELECT 1;' >/dev/null
+psql --no-psqlrc "$RESTORE_DATABASE_URL" --set=ON_ERROR_STOP=1 -c 'SELECT 1;' >/dev/null
 printf 'restore test passed for %s\n' "$BACKUP_FILE"

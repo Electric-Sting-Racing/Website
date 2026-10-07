@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test-scan-build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: fsae_test
+          POSTGRES_USER: fsae_app
+          POSTGRES_PASSWORD: ci-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fsae_app -d fsae_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DJANGO_DEBUG: "True"
+      DJANGO_SECRET_KEY: ci-only-secret-key-that-is-long-enough-for-checks-0123456789
+      DJANGO_ALLOWED_HOSTS: testserver,localhost,127.0.0.1
+      DJANGO_CSRF_TRUSTED_ORIGINS: https://testserver
+      DB_ENGINE: postgres
+      DB_NAME: fsae_test
+      DB_USER: fsae_app
+      DB_PASSWORD: ci-password
+      DB_HOST: 127.0.0.1
+      DB_PORT: "5432"
+      DJANGO_SECURE_SSL_REDIRECT: "False"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pip-audit
+
+      - name: Migrate
+        run: python manage.py migrate --noinput
+
+      - name: Test
+        run: python manage.py test
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Source and frontend behavior checks
+        run: |
+          python scripts/verify_release.py
+          node --test scripts/test_frontend.cjs
+          bash scripts/test_restore_safety.sh
+
+      - name: Check for missing migrations
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Django checks
+        run: python manage.py check
+
+      - name: Deployment checks
+        env:
+          DJANGO_DEBUG: "False"
+          DJANGO_SECURE_SSL_REDIRECT: "True"
+          DJANGO_SECURE_HSTS_SECONDS: "31536000"
+          DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS: "False"
+          DJANGO_SECURE_HSTS_PRELOAD: "False"
+        run: python manage.py check --deploy --fail-level WARNING
+
+      - name: Dependency audit
+        run: pip-audit -r requirements.txt
+
+      - name: Backup test database
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGUSER: fsae_app
+          PGPASSWORD: ci-password
+          PGDATABASE: fsae_test
+          BACKUP_DIR: artifacts/backups
+        run: bash scripts/backup_postgres.sh
+
+      - name: Create restore database
+        env:
+          PGPASSWORD: ci-password
+        run: createdb -h 127.0.0.1 -U fsae_app fsae_restore
+
+      - name: Restore test
+        env:
+          RESTORE_DATABASE_URL: postgresql://fsae_app:ci-password@127.0.0.1:5432/fsae_restore
+        run: |
+          backup_file="$(find artifacts/backups -name '*.dump' -print -quit)"
+          BACKUP_FILE="$backup_file" bash scripts/restore_test_postgres.sh
+
+      - name: Build image
+        run: docker build --pull --tag es:${{ github.sha }} .

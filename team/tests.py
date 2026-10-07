@@ -1,6 +1,10 @@
 import hashlib
 import importlib
+import os
 from pathlib import Path
+import secrets
+import subprocess
+import sys
 from types import SimpleNamespace
 
 from django.apps import apps
@@ -275,3 +279,42 @@ class RosterMigrationTests(TransactionTestCase):
         finally:
             executor = MigrationExecutor(connection)
             executor.migrate(executor.loader.graph.leaf_nodes())
+
+
+class ProductionSecretSettingsTests(TestCase):
+    def run_production_check(self, secret_key, db_password):
+        env = os.environ.copy()
+        for name in ("DJANGO_SECRET_KEY_FILE", "DB_PASSWORD_FILE", "SENTRY_DSN"):
+            env.pop(name, None)
+        env.update({
+            "DJANGO_DEBUG": "False",
+            "DJANGO_SECRET_KEY": secret_key,
+            "DJANGO_ALLOWED_HOSTS": "example.com",
+            "DJANGO_CSRF_TRUSTED_ORIGINS": "https://example.com",
+            "DB_ENGINE": "postgres",
+            "DB_PASSWORD": db_password,
+        })
+        return subprocess.run(
+            [sys.executable, str(settings.BASE_DIR / "manage.py"), "check"],
+            cwd=settings.BASE_DIR,
+            env=env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    def test_production_rejects_short_django_secret_key(self):
+        result = self.run_production_check(
+            "replace-with-secret-manager-value",
+            secrets.token_urlsafe(32),
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("at least 50 characters", result.stderr)
+
+    def test_production_rejects_example_database_password(self):
+        result = self.run_production_check(
+            secrets.token_urlsafe(48),
+            "replace-with-secret-manager-value",
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("DB_PASSWORD must not use the example placeholder", result.stderr)

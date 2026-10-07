@@ -44,6 +44,10 @@ if not SECRET_KEY:
         SECRET_KEY = "local-development-only-change-me"
     else:
         raise ImproperlyConfigured("DJANGO_SECRET_KEY or DJANGO_SECRET_KEY_FILE is required")
+if not DEBUG and len(SECRET_KEY) < 50:
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY must be at least 50 characters when DJANGO_DEBUG is false"
+    )
 
 ALLOWED_HOSTS = _env_list("DJANGO_ALLOWED_HOSTS")
 if not ALLOWED_HOSTS:
@@ -113,6 +117,8 @@ if DB_ENGINE in {"postgres", "postgresql"}:
     db_password = _read_env("DB_PASSWORD", "")
     if not db_password and not DEBUG:
         raise ImproperlyConfigured("DB_PASSWORD or DB_PASSWORD_FILE is required")
+    if not DEBUG and db_password.strip().lower() == "replace-with-secret-manager-value":
+        raise ImproperlyConfigured("DB_PASSWORD must not use the example placeholder in production")
 
     postgres_options = {}
     db_sslmode = os.getenv("DB_SSLMODE")
