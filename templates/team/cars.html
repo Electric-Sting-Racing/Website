@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Car in development | {{ site_name }}{% endblock %}
+{% block content %}
+<section class="page-hero dark-section hex-bg">
+  <div class="wrap page-hero-grid">
+    <div><p class="eyebrow accent">THE DESIGN PROGRAM / 02</p><h1>Design first.<br>Build next.<br><em>Race ahead.</em></h1></div>
+    <p class="page-hero-lede">Our first car has not been built yet. We're working through the design, planning the systems, and preparing for manufacturing.</p>
+  </div>
+</section>
+<section class="section-pad cars-section">
+  <div class="wrap">
+    <div class="section-topline"><p class="eyebrow">IN DEVELOPMENT</p><span class="mono">FROM DESIGN TO OUR FIRST BUILD</span></div>
+    <div class="car-archive">
+      {% for car in cars %}
+      <a href="{{ car.get_absolute_url }}" class="archive-card archive-card-current reveal">
+        <div class="archive-image design-visual">
+          <img src="{% static 'images/electric-sting-mascot-v4.webp' %}" alt="" width="2048" height="1373" loading="lazy">
+          <span class="mono">{{ car.season }} / IN DESIGN</span>
+          <strong>{{ car.name }}</strong>
+        </div>
+        <div class="archive-copy">
+          <span class="eyebrow">NOT YET BUILT</span>
+          <p>A first-generation electric formula car in development. Specifications and performance results are not finalized.</p>
+          <span class="text-link">View the design plan <span aria-hidden="true">↗</span></span>
+        </div>
+      </a>
+      {% empty %}
+      <div class="design-notice">
+        <strong>Our first car is in design.</strong>
+        <p>Design details will be shared as the program develops.</p>
+        <a class="text-link" href="{% url 'contact' %}">Join the team <span aria-hidden="true">→</span></a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

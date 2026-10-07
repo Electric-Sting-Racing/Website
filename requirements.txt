@@ -1,0 +1,5 @@
+Django>=5.2,<5.3
+psycopg[binary]>=3.2,<4
+gunicorn>=23,<24
+whitenoise>=6.9,<7
+sentry-sdk[django]>=2,<3

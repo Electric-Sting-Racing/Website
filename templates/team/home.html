@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ site_name }} | {{ school_name }} Formula SAE Electric{% endblock %}
+{% block content %}
+<section class="hero-section dark-section hex-bg">
+  <div class="wrap hero-grid">
+    <div class="hero-copy reveal">
+      <p class="eyebrow accent">SACRAMENTO STATE / FSAE ELECTRIC</p>
+      <h1>Built from<br><em>zero.</em><br>Built to compete.</h1>
+      <p class="hero-lede">{{ site_name }} is Sacramento State's first Formula SAE Electric team. We're designing our first electric formula-style car. Manufacturing, testing, and competition are ahead of us.</p>
+      <div class="hero-actions">{% if current_car %}<a class="button button-primary" href="{{ current_car.get_absolute_url }}">Explore our design plan <span aria-hidden="true">↗</span></a>{% endif %}<a class="button button-outline-light" href="{% url 'sponsors' %}">Help us build <span aria-hidden="true">↗</span></a></div>
+      <div class="hero-meta"><span class="mono">EST. 2025</span><span class="mono">FORMULA SAE ELECTRIC / JUNE 2027</span></div>
+    </div>
+    <div class="hero-visual reveal reveal-delay-1">
+      <div class="hero-orbit orbit-a"></div><div class="hero-orbit orbit-b"></div>
+      <div class="hero-logo-shell"><img src="{% static 'images/electric-sting-mascot-v4.webp' %}" alt="Electric Sting green and gold mascot" width="2048" height="1373" fetchpriority="high"></div>
+      <div class="telemetry-card telemetry-top"><span class="telemetry-label">PROGRAM STATUS</span><strong><span class="status-dot"></span> IN DESIGN</strong></div>
+      <div class="telemetry-card telemetry-bottom"><span class="telemetry-label">ROAD TO COMPETITION</span><strong>JUNE 2027</strong><span class="telemetry-line">Michigan International Speedway</span></div>
+      <span class="hero-coordinate mono">ESR / 001</span>
+    </div>
+  </div>
+  <div class="wrap hero-stats">{% for value, label, detail in program_metrics %}<div><strong>{{ value }}</strong><span>{{ label }}</span><small>{{ detail }}</small></div>{% endfor %}</div>
+</section>
+
+<section class="program-explore" aria-label="Explore Electric Sting">
+  <div class="wrap program-explore-grid">
+    <div class="program-explore-intro"><p class="eyebrow accent">EXPLORE ELECTRIC STING</p><strong>A student-built program<br>with a real finish line.</strong></div>
+    <a class="program-explore-link" href="{% url 'roster' %}"><span class="mono">01 / PEOPLE</span><strong>Meet the team</strong><span aria-hidden="true">↗</span></a>
+    <a class="program-explore-link" href="{% url 'cars' %}"><span class="mono">02 / DESIGN</span><strong>The car we're planning</strong><span aria-hidden="true">↗</span></a>
+    <a class="program-explore-link" href="{% url 'gallery' %}"><span class="mono">03 / GALLERY</span><strong>See the team in motion</strong><span aria-hidden="true">↗</span></a>
+  </div>
+</section>
+
+<section class="team-feature section-pad">
+  <div class="wrap team-feature-grid">
+    <div class="team-feature-image reveal"><img src="{% static 'images/team-outreach.webp' %}" alt="Electric Sting Racing students gathered outside for a team presentation" loading="lazy" decoding="async" width="2048" height="1536"><span class="mono">TEAM / 01</span></div>
+    <div class="team-feature-copy reveal reveal-delay-1"><p class="eyebrow accent">THE PEOPLE MAKE THE PROGRAM</p><h2>Build it<br><em>together.</em></h2><p class="large-copy">Electric Sting Racing is a new home for cross-disciplinary engineering at Sacramento State.</p><p>High Voltage, Powertrain, Low Voltage/Controls, Frame, and Suspensions come together through careful design and collaboration. Everyone has a place in the build.</p><a class="text-link" href="{% url 'roster' %}">Meet the people behind it <span aria-hidden="true">→</span></a></div>
+  </div>
+</section>
+
+<section class="reason-section section-pad dark-section hex-bg">
+  <div class="wrap"><div class="section-topline"><p class="eyebrow accent">WHY ELECTRIC STING</p><span class="mono">A NEW PLATFORM FOR REAL ENGINEERING</span></div>
+    <div class="reason-grid">
+      <article class="reason-card reveal"><span class="reason-number">01</span><h3>First on campus</h3><p>A new home for students who want to go deep into battery systems, power electronics, mechanical design, and vehicle dynamics.</p></article>
+      <article class="reason-card reveal reveal-delay-1"><span class="reason-number">02</span><h3>Built across disciplines</h3><p>Engineering and business work together to make a vehicle, a program, and a community that lasts beyond one season.</p></article>
+      <article class="reason-card reveal reveal-delay-2"><span class="reason-number">03</span><h3>A real deadline</h3><p>One clear finish line: Formula SAE Electric in June 2027, where we take our vision to the competition stage.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="roadmap-section section-pad dark-section hex-bg">
+  <div class="wrap"><div class="section-topline"><p class="eyebrow accent">ROAD TO COMPETITION</p><span class="mono">ONE YEAR / ONE CAR / ONE FINISH LINE</span></div><h2 class="section-display">The build<br><em>is the race.</em></h2>
+    <div class="roadmap-list">{% for phase in program_phases %}<article class="roadmap-row reveal"><span class="roadmap-season mono">{{ phase.season }}</span><div class="roadmap-copy"><h3>{{ phase.label }}</h3><p>{{ phase.description }}</p></div><span class="roadmap-index mono">{{ forloop.counter|stringformat:"02d" }}</span></article>{% endfor %}</div>
+  </div>
+</section>
+
+<section class="systems-section section-pad dark-section">
+  <div class="wrap"><div class="section-topline"><p class="eyebrow accent">ENGINEERING THE CAR</p><span class="mono">FROM THE CLASSROOM TO THE STARTING LINE</span></div><div class="systems-heading"><h2>Five sections.<br><em>One car.</em></h2><p>Every part of the program has a job. Every job has a student owner. The work only moves when the whole system moves.</p></div>
+    <div class="system-grid">{% for number, title, description in engineering_systems %}<article class="system-card reveal"><span class="system-number mono">{{ number }}</span><div class="system-icon" aria-hidden="true"></div><h3>{{ title }}</h3><p>{{ description }}</p></article>{% endfor %}</div>
+  </div>
+</section>
+
+{% if current_car %}<section class="current-build section-pad">
+  <div class="wrap"><div class="section-topline"><p class="eyebrow accent">IN DEVELOPMENT / {{ current_car.season }}</p><a class="text-link" href="{% url 'cars' %}">Our first car <span aria-hidden="true">→</span></a></div>
+    <div class="build-grid">
+      <div class="build-visual design-visual reveal">
+        <img src="{% static 'images/electric-sting-mascot-v4.webp' %}" alt="Electric Sting mascot" width="2048" height="1373" loading="lazy">
+        <span class="build-stamp mono">IN DESIGN / {{ current_car.season }}</span>
+        <div class="build-visual-label"><span class="eyebrow accent">NOT YET BUILT</span><strong>{{ current_car.name }}</strong></div>
+      </div>
+      <div class="build-copy reveal reveal-delay-1">
+        <p class="eyebrow">{{ current_car.season }} / FIRST GENERATION</p>
+        <h2>Our first car.<br>Still in design.</h2>
+        <p>The car has not been built yet. We're developing the design and preparing for manufacturing. Performance figures will follow assembly and testing.</p>
+        <div class="spec-list"><div><span class="mono">CURRENT STAGE</span><strong>Design</strong></div><div><span class="mono">MANUFACTURING</span><strong>Planned</strong></div><div><span class="mono">TEST RESULTS</span><strong>Not available yet</strong></div></div>
+        <a class="button button-outline-light" href="{{ current_car.get_absolute_url }}">View the design plan <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </div>
+</section>{% endif %}
+
+<section class="sponsor-band section-pad dark-section hex-bg"><div class="wrap sponsor-band-grid"><div><p class="eyebrow accent">HOW YOU CAN HELP</p><h2>Help build a program<br>people can <em>grow</em> with.</h2><p>Your sponsorship does more than place a logo. It helps create the first generation of Electric Sting engineers.</p><a class="button button-primary" href="{% url 'sponsors' %}">See sponsorship packages <span aria-hidden="true">↗</span></a></div><div class="sponsor-wall">{% for sponsor in sponsors %}<span>{{ sponsor.name }}</span>{% empty %}<span>YOUR LOGO HERE</span><span>YOUR LOGO HERE</span><span>YOUR LOGO HERE</span>{% endfor %}</div></div></section>
+{% endblock %}

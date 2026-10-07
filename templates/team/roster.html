@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}The team | {{ site_name }}{% endblock %}
+{% block content %}
+<section class="page-hero dark-section hex-bg"><div class="wrap page-hero-grid"><div><p class="eyebrow accent">THE PEOPLE / 01</p><h1>Build a program<br>people can <em>grow</em> with.</h1></div><p class="page-hero-lede">Our team is designing its first electric formula car. The people, collaboration, and documentation are what will make it possible.</p></div></section>
+{% if grouped_members %}
+<section class="section-pad roster-section">
+  <div class="wrap">
+    <div class="section-topline"><p class="eyebrow">{% if member_count %}{{ member_count }} MEMBERS / {% endif %}{{ team_season }}</p><span class="mono">FIVE SECTIONS / ONE TEAM</span></div>
+    <nav class="section-jump-links" aria-label="Team sections">{% for key, label, subteam_members in grouped_members %}<a href="#{{ key }}">{{ label }}</a>{% endfor %}</nav>
+    {% for key, label, subteam_members in grouped_members %}
+    <section class="roster-group" id="{{ key }}" aria-labelledby="{{ key }}-title">
+      <div class="roster-group-heading reveal"><span class="mono">{{ forloop.counter|stringformat:"02d" }}</span><h2 id="{{ key }}-title">{{ label }}</h2>{% if subteam_members %}<span class="roster-count">{{ subteam_members|length|stringformat:"02d" }} people</span>{% endif %}</div>
+      <div class="member-grid">
+        {% for member in subteam_members %}
+        <article class="member-card reveal{% if member.is_lead %} member-card-lead{% endif %}">
+          <div class="member-card-top"><div class="member-avatar {% if member.is_lead %}member-avatar-lead{% endif %}"><span>{{ member.name|slice:":1" }}</span><i aria-hidden="true"></i></div>{% if member.is_lead %}<span class="lead-badge">Section lead</span>{% endif %}</div>
+          <div class="member-content"><div><h3>{{ member.name }}</h3><span class="member-role">{{ member.role }}</span></div><span class="member-year mono">{{ member.year }}</span></div>
+          {% if member.bio %}<p>{{ member.bio }}</p>{% endif %}
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+<section class="handoff-callout dark-section hex-bg section-pad"><div class="wrap handoff-grid"><div><p class="eyebrow accent">THE HANDOFF PROTOCOL</p><h2>Build the car.<br>Leave the map.</h2></div><div><p class="large-copy">Every lead leaves behind a design brief, a test log, and a list of open questions. The next team should start from the last lap — not the first meeting.</p><a class="text-link" href="{% url 'contact' %}">Join the next lap <span aria-hidden="true">→</span></a></div></div></section>
+{% endblock %}

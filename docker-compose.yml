@@ -1,0 +1,71 @@
+x-app-environment: &app-environment
+  DJANGO_DEBUG: "False"
+  DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:?set DJANGO_ALLOWED_HOSTS}
+  DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:?set DJANGO_CSRF_TRUSTED_ORIGINS}
+  DJANGO_SECURE_SSL_REDIRECT: ${DJANGO_SECURE_SSL_REDIRECT:-true}
+  DB_ENGINE: postgres
+  DB_NAME: ${DB_NAME:-fsae}
+  DB_USER: ${DB_USER:-fsae_app}
+  DB_PASSWORD_FILE: /run/secrets/db_password
+  DB_HOST: db
+  DB_PORT: "5432"
+  DB_SSLMODE: ${DB_SSLMODE:-}
+  DJANGO_SECRET_KEY_FILE: /run/secrets/django_secret_key
+  SENTRY_DSN: ${SENTRY_DSN:-}
+  TEAM_NAME: ${TEAM_NAME:-ELECTRIC STING RACING}
+  TEAM_SCHOOL: ${TEAM_SCHOOL:-SACRAMENTO STATE}
+  TEAM_LOCATION: ${TEAM_LOCATION:-Sacramento State / Engineering & Computer Science}
+  TEAM_EMAIL: ${TEAM_EMAIL:-electricstingracing@sacstate.edu}
+  TEAM_SEASON: ${TEAM_SEASON:-2026 — 2027}
+
+x-app-secrets: &app-secrets
+  - db_password
+  - django_secret_key
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-fsae}
+      POSTGRES_USER: ${DB_USER:-fsae_app}
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
+    volumes:
+      - fsae_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    profiles: ["ops"]
+    build: .
+    command: python manage.py migrate --noinput
+    environment: *app-environment
+    secrets: *app-secrets
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build: .
+    restart: unless-stopped
+    environment: *app-environment
+    secrets: *app-secrets
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8000:8000"
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  django_secret_key:
+    file: ./secrets/django_secret_key.txt
+
+volumes:
+  fsae_postgres_data:

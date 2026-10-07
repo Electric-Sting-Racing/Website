@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ car.name }} — In design | {{ site_name }}{% endblock %}
+{% block content %}
+<section class="car-detail-hero dark-section hex-bg">
+  <div class="wrap">
+    <a href="{% url 'cars' %}" class="back-link">← Back to the design program</a>
+    <div class="car-detail-heading">
+      <div>
+        <p class="eyebrow accent">{{ car.season }} / IN DESIGN — NOT YET BUILT</p>
+        <h1>{{ car.name }}</h1>
+        <p class="car-tagline">Our first electric formula car is still in development.</p>
+      </div>
+    </div>
+    <div class="design-notice" role="note">
+      <strong>The car has not been built yet.</strong>
+      <p>This page describes our design program, not a completed vehicle. Manufacturing, assembly, and testing are milestones ahead.</p>
+    </div>
+    <div class="detail-image design-visual">
+      <img src="{% static 'images/electric-sting-mascot-v4.webp' %}" alt="Electric Sting team mascot — not a photo of a completed car" width="2048" height="1373">
+      <span class="mono design-caption">OUR TEAM / OUR FIRST CAR IS STILL IN DESIGN</span>
+    </div>
+  </div>
+</section>
+<section class="section-pad car-detail-body">
+  <div class="wrap car-detail-grid">
+    <div><p class="eyebrow accent">THE DESIGN PLAN</p><h2>Design first.<br><em>Build next.</em></h2></div>
+    <div>
+      <p class="large-copy">We're defining the systems, interfaces, and manufacturing approach for our first electric formula-style vehicle.</p>
+      <p>Our next steps are to complete subsystem design, source materials, and prepare for fabrication and integration. Validated specifications and performance results will be shared after the car is built and tested.</p>
+      <div class="spec-table">
+        <div><span class="mono">CURRENT STAGE</span><strong>Design</strong></div>
+        <div><span class="mono">VEHICLE</span><strong>Not yet built</strong></div>
+        <div><span class="mono">SPECIFICATIONS</span><strong>Under development</strong></div>
+        <div><span class="mono">TEST RESULTS</span><strong>Not available yet</strong></div>
+      </div>
+      <a class="button button-primary design-action" href="{% url 'sponsors' %}">Support the first build <span aria-hidden="true">↗</span></a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Gallery | {{ site_name }}{% endblock %}
+{% block content %}
+<section class="page-hero dark-section hex-bg"><div class="wrap page-hero-grid"><div><p class="eyebrow accent">THE RECORD / 06</p><h1>Work worth<br><em>remembering.</em></h1></div><p class="page-hero-lede">A visual archive of the people, tools, and small victories behind each build.</p></div></section>
+<section class="section-pad gallery-section"><div class="wrap"><div class="gallery-grid">{% for image in images %}<figure class="gallery-item reveal"><div class="gallery-image"><img src="{{ image.image_url }}" alt="{{ image.alt_text }}" loading="lazy" decoding="async"><span class="mono">{{ forloop.counter|stringformat:"02d" }}</span></div><figcaption><strong>{{ image.title }}</strong><span>{{ image.caption }}</span></figcaption></figure>{% empty %}<div class="empty-state">More team photos are on the way.</div>{% endfor %}</div></div></section>
+{% endblock %}
