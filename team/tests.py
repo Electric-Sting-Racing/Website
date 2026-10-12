@@ -196,7 +196,7 @@ class PublicSiteTests(TestCase):
 
     def test_lazy_images_and_mobile_controls(self):
         response = self.client.get(reverse("home"))
-        self.assertContains(response, 'loading="lazy" decoding="async" width="1024" height="769"')
+        self.assertContains(response, 'loading="lazy" decoding="async" width="2048" height="1536"')
         self.assertContains(response, 'fetchpriority="high"')
         self.assertContains(response, '/static/js/site-v5.js')
         self.assertContains(response, 'aria-controls="primary-nav"')
