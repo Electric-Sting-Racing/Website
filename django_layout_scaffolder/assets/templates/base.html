@@ -1,0 +1,32 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Electric Sting Racing{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="{% url '__APP_NAMESPACE__:index' %}">
+            Electric Sting Racing
+        </a>
+
+        <nav aria-label="Main navigation">
+            <a href="{% url '__APP_NAMESPACE__:index' %}#team">Team</a>
+            <a href="{% url '__APP_NAMESPACE__:index' %}#car">Our Car</a>
+            <a href="{% url '__APP_NAMESPACE__:index' %}#sponsors">Sponsors</a>
+            <a href="{% url '__APP_NAMESPACE__:index' %}#join">Join Us</a>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <p>Electric Sting Racing · FSAE EV</p>
+    </footer>
+</body>
+</html>

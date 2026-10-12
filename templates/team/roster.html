@@ -5,7 +5,7 @@
 {% if grouped_members %}
 <section class="section-pad roster-section">
   <div class="wrap">
-    <div class="section-topline"><p class="eyebrow">{% if member_count %}{{ member_count }} MEMBERS / {% endif %}{{ team_season }}</p><span class="mono">FIVE SECTIONS / ONE TEAM</span></div>
+    <div class="section-topline"><p class="eyebrow">{% if member_count %}{{ member_count }} MEMBERS / {% endif %}{{ team_season }}</p><span class="mono">SIX SECTIONS / ONE TEAM</span></div>
     <nav class="section-jump-links" aria-label="Team sections">{% for key, label, subteam_members in grouped_members %}<a href="#{{ key }}">{{ label }}</a>{% endfor %}</nav>
     {% for key, label, subteam_members in grouped_members %}
     <section class="roster-group" id="{{ key }}" aria-labelledby="{{ key }}-title">

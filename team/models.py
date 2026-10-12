@@ -4,11 +4,12 @@ from django.urls import reverse
 
 class TeamMember(models.Model):
     SUBTEAM_CHOICES = [
+        ("business", "Business"),
         ("high_voltage", "High Voltage"),
         ("powertrain", "Powertrain"),
         ("low_voltage_controls", "Low Voltage/Controls"),
         ("frame", "Frame"),
-        ("suspensions", "Suspensions"),
+        ("suspensions", "Suspension"),
     ]
 
     name = models.CharField(max_length=120)
@@ -97,6 +98,12 @@ class SponsorshipTier(models.Model):
     badge = models.CharField(max_length=80, help_text="e.g. Bronze Leaf")
     social_posts = models.CharField(max_length=20, default="1")
     logo_size = models.CharField(max_length=40, default="Small")
+    website_recognition = models.CharField(max_length=240, blank=True)
+    social_media_recognition = models.CharField(max_length=240, blank=True)
+    progress_updates = models.CharField(max_length=240, blank=True)
+    event_invitations = models.CharField(max_length=240, blank=True)
+    recruiting = models.CharField(max_length=240, blank=True)
+    merchandise = models.CharField(max_length=240, blank=True)
     school_tour = models.BooleanField(default=False)
     logo_on_merch = models.BooleanField(default=False)
     sort_order = models.PositiveIntegerField(default=0)

@@ -1,5 +1,9 @@
 # Electric Sting Racing
 
+For the uploaded proposal, photo, and nine team leads, start with [RELEASE-V7.md](RELEASE-V7.md).
+
+For the restored sponsorship packages and public-page cleanup, start with [RELEASE-V6.md](RELEASE-V6.md). The neon theme, roster leads, scroll effects, mobile layout, and startup instructions are covered in [RELEASE-V5.md](RELEASE-V5.md).
+
 A maintainable Django site for Sacramento State's Formula SAE Electric team. It includes the public site, a Django admin, PostgreSQL production support, structured logs, a database health endpoint, and deployment checks.
 
 ## Local development
