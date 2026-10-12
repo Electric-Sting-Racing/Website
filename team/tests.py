@@ -349,6 +349,22 @@ class RequestedContentMigrationTests(TestCase):
             actual = TeamMember.objects.get(name=name)
             self.assertEqual((actual.subteam, actual.role, actual.is_lead), (section, role, True))
 
+    def test_proposal_values_fit_the_migration_schema(self):
+        # Check the historical model, so SQLite cannot hide PostgreSQL length
+        # failures and a later migration cannot mask the broken data write.
+        executor = MigrationExecutor(connection)
+        target = [("team", "0007_requested_leads_and_proposal_benefits")]
+        state = executor.loader.project_state(target)
+        tier_model = state.apps.get_model("team", "SponsorshipTier")
+        logo_field = tier_model._meta.get_field("logo_size")
+        for name, (_, logo_description) in self.migration.CAR_LOGOS.items():
+            with self.subTest(tier=name, field="logo_size"):
+                logo_field.clean(logo_description, None)
+        for name, benefits in self.migration.BENEFITS.items():
+            for field_name, value in benefits.items():
+                with self.subTest(tier=name, field=field_name):
+                    tier_model._meta.get_field(field_name).clean(value, None)
+
     def test_benefits_match_proposal_and_keep_editorial_changes(self):
         SponsorshipTier.objects.all().delete()
         original = importlib.import_module("team.migrations.0005_restore_sponsorship_packages")

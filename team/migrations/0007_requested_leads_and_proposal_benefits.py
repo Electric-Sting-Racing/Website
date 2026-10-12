@@ -49,7 +49,7 @@ BENEFITS = {
     },
 }
 CAR_LOGOS = {
-    "Bronze": ("Extra small", "Extra small in a secondary bodywork location"),
+    "Bronze": ("Extra small", "Extra small on secondary bodywork"),
     "Silver": ("Small", "Small secondary bodywork location"),
     "Gold": ("Medium", "Medium, visible side or front bodywork"),
     "Platinum": ("Large", "Large premium car location"),

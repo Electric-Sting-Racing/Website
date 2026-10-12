@@ -51,8 +51,14 @@ staticfiles are omitted. See README.md for fresh setup and deployment.
 ## Validation
 
 - Django system checks and migration consistency checks passed.
-- All 28 Django tests passed, including migration idempotence and preservation
-  of existing profiles and custom benefit fields.
+- All 39 repository tests passed on SQLite and embedded PostgreSQL 18.3
+  (PGlite), including all migration tests. Native PostgreSQL 16 was unavailable
+  in this environment; the GitHub Actions PostgreSQL job remains the native check.
+- The original PostgreSQL varchar(40) failure was reproduced. The corrected
+  migration recovered from 0006, repeated without duplicate leads, and the
+  entire team migration chain reversed and reapplied successfully.
+- A regression test validates every proposal value against the historical
+  schema at migration 0007, so SQLite cannot hide string-length failures.
 - All 12 frontend behavior tests passed.
 - Source checks, restore-safety checks, and staging-smoke checker tests passed.
 - Home, team, sponsors, and gallery pages returned 200 with the collected
@@ -62,3 +68,21 @@ staticfiles are omitted. See README.md for fresh setup and deployment.
   CSS and the existing mobile behavior are included.
 
 Page source release marker: `es-sponsorship-v7`.
+
+## PostgreSQL migration correction
+
+The original Bronze description had 44 characters but logo_size allows 40.
+Migration 0007 now stores "Extra small on secondary bodywork" (33 characters),
+retaining both size and location. Editing the failing 0007 is necessary because
+adding a later migration alone cannot resolve a failure earlier in the chain.
+
+Migration 0008 normalizes only the exact original overlong Bronze default on
+SQLite installations that had already applied 0007. It preserves custom text
+and is idempotent. All other sponsorship details remain in the full PDF.
+
+For a checkout already containing the previous v7 release, the fix changes
+team/migrations/0007_requested_leads_and_proposal_benefits.py and team/tests.py,
+and adds team/migrations/0008_normalize_bronze_logo_description.py.
+Apply these source changes, commit and push them, then rerun CI. The failed
+PostgreSQL migration rolled back; normal `migrate` retries it. No `--fake`,
+database reset, or deletion is required.
