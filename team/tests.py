@@ -26,6 +26,7 @@ from .models import Car, SponsorshipTier, TeamMember
 })
 class PublicSiteTests(TestCase):
     def setUp(self):
+        TeamMember.objects.all().delete()
         self.car = Car.objects.create(
             name="ELECTRIC STING 01",
             season="2027",
@@ -71,7 +72,7 @@ class PublicSiteTests(TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertContains(response, "/static/images/electric-sting-mascot-v4.webp")
                 self.assertContains(response, "/static/css/site-v5.css")
-                self.assertContains(response, 'content="es-sponsorship-v6"')
+                self.assertContains(response, 'content="es-sponsorship-v7"')
                 self.assertNotContains(response, "electric-sting-logo.webp")
                 self.assertNotContains(response, "{empty}")
                 self.assertNotContains(response, 'href="/stories/')
@@ -131,12 +132,12 @@ class PublicSiteTests(TestCase):
         self.assertEqual(response.json(), {"status": "ok"})
 
     def test_exact_sections_in_order_on_home_and_roster(self):
-        labels = ["High Voltage", "Powertrain", "Low Voltage/Controls", "Frame", "Suspensions"]
+        labels = ["Business", "High Voltage", "Powertrain", "Low Voltage/Controls", "Frame", "Suspension"]
         self.assertEqual([label for _, label in TeamMember.SUBTEAM_CHOICES], labels)
         response = self.client.get(reverse("roster"))
         self.assertEqual([group[1] for group in response.context["grouped_members"]], labels)
         home = self.client.get(reverse("home"))
-        self.assertEqual([item[1] for item in home.context["engineering_systems"]], labels)
+        self.assertEqual([item[1] for item in home.context["engineering_systems"]], labels[1:])
         self.assertContains(home, "Five sections.")
         self.assertNotContains(home, "Six systems.")
 
@@ -158,10 +159,10 @@ class PublicSiteTests(TestCase):
         self.assertNotContains(response, "Inactive Profile")
         self.assertEqual(response.context["member_count"], 1)
 
-    def test_empty_roster_still_has_five_sections(self):
+    def test_empty_roster_still_has_six_sections(self):
         TeamMember.objects.all().delete()
         response = self.client.get(reverse("roster"))
-        self.assertEqual(len(response.context["grouped_members"]), 5)
+        self.assertEqual(len(response.context["grouped_members"]), 6)
         for key, label in TeamMember.SUBTEAM_CHOICES:
             self.assertContains(response, f'id="{key}"')
             self.assertContains(response, label)
@@ -195,14 +196,14 @@ class PublicSiteTests(TestCase):
 
     def test_lazy_images_and_mobile_controls(self):
         response = self.client.get(reverse("home"))
-        self.assertContains(response, 'loading="lazy" decoding="async" width="2048" height="1536"')
+        self.assertContains(response, 'loading="lazy" decoding="async" width="1024" height="769"')
         self.assertContains(response, 'fetchpriority="high"')
         self.assertContains(response, '/static/js/site-v5.js')
         self.assertContains(response, 'aria-controls="primary-nav"')
         self.assertContains(response, 'name="viewport"')
         self.assertNotContains(response, 'loading="eager"')
         gallery = self.client.get(reverse("gallery"))
-        self.assertContains(gallery, 'loading="lazy" decoding="async"', count=2)
+        self.assertContains(gallery, 'loading="lazy" decoding="async"', count=3)
 
 
     def test_public_empty_pages_have_no_admin_instructions(self):
@@ -259,6 +260,7 @@ class RosterMigrationTests(TransactionTestCase):
         executor.migrate(self.old_target)
         try:
             old_model = executor.loader.project_state(self.old_target).apps.get_model("team", "TeamMember")
+            old_model.objects.all().delete()
             old_sections = ["battery", "drivetrain", "controls", "chassis", "aero", "business"]
             for section in old_sections:
                 old_model.objects.create(name=section, role="Engineer", subteam=section, is_lead=True, bio="Keep this bio")
@@ -318,3 +320,45 @@ class ProductionSecretSettingsTests(TestCase):
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("DB_PASSWORD must not use the example placeholder", result.stderr)
+
+
+@override_settings(STORAGES={
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+})
+class RequestedContentMigrationTests(TestCase):
+    def setUp(self):
+        TeamMember.objects.all().delete()
+        self.migration = importlib.import_module("team.migrations.0007_requested_leads_and_proposal_benefits")
+
+    def apply_content(self):
+        self.migration.add_requested_content(apps, SimpleNamespace(connection=connection))
+
+    def test_leads_survive_repeat_application_and_preserve_profiles(self):
+        member = TeamMember.objects.create(name="Branden Pavon", role="Member", bio="Existing biography", year="2028")
+        self.apply_content()
+        self.apply_content()
+        self.assertEqual(TeamMember.objects.count(), 9)
+        member.refresh_from_db()
+        self.assertEqual(member.bio, "Existing biography")
+        self.assertEqual(member.year, "2028")
+        self.assertTrue(member.is_lead)
+        response = self.client.get(reverse("roster"))
+        for name, section, role in self.migration.LEADS:
+            self.assertContains(response, name)
+            actual = TeamMember.objects.get(name=name)
+            self.assertEqual((actual.subteam, actual.role, actual.is_lead), (section, role, True))
+
+    def test_benefits_match_proposal_and_keep_editorial_changes(self):
+        SponsorshipTier.objects.all().delete()
+        original = importlib.import_module("team.migrations.0005_restore_sponsorship_packages")
+        original.restore_packages(apps, SimpleNamespace(connection=connection))
+        self.apply_content()
+        gold = SponsorshipTier.objects.get(name="Gold")
+        self.assertEqual(gold.social_media_recognition, "1 story announcement + 1 post")
+        self.assertTrue(SponsorshipTier.objects.get(name="Bronze").logo_on_merch)
+        gold.progress_updates = "Custom update schedule"
+        gold.save()
+        self.apply_content()
+        gold.refresh_from_db()
+        self.assertEqual(gold.progress_updates, "Custom update schedule")

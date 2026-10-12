@@ -390,3 +390,27 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--acid); outline-
   .reveal, .reveal.is-pending { opacity: 1; transform: none; }
 }
 @media print { .reveal, .reveal.is-pending { opacity: 1; transform: none; } }
+
+/* Uploaded sponsorship proposal and readable, responsive comparison. */
+.sponsorship-document { display: grid; grid-template-columns: minmax(180px, 300px) 1fr; gap: clamp(28px, 5vw, 70px); align-items: center; margin: 0 0 65px; }
+.sponsorship-cover { display: block; border: 1px solid var(--line); }
+.sponsorship-cover img { display: block; width: 100%; height: auto; }
+.sponsorship-document-copy h2 { margin: 18px 0; font-size: clamp(42px, 5vw, 70px); line-height: .95; }
+.sponsorship-document-copy > p { max-width: 620px; }
+.sponsorship-document-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0; }
+.sponsorship-note { color: var(--muted); font-size: 13px; }
+.sponsorship-benefits { width: 100%; min-width: 850px; border-collapse: collapse; }
+.sponsorship-benefits caption { padding: 22px; text-align: left; color: var(--acid); font: 600 14px var(--mono); }
+.sponsorship-benefits th, .sponsorship-benefits td { padding: 18px; border: 1px solid var(--line); text-align: center; font-size: 13px; vertical-align: middle; }
+.sponsorship-benefits tbody th { text-align: left; color: var(--muted); min-width: 160px; }
+.sponsorship-benefits thead th { min-width: 165px; }
+.sponsorship-benefits thead strong { display: block; margin: 12px 0 8px; color: var(--acid); font: 700 28px var(--display); }
+.sponsorship-benefits thead span { display: block; font-family: var(--mono); }
+.sponsorship-benefits .package-amount { font-size: 20px; }
+.team-feature-image { min-height: 0; aspect-ratio: 1024 / 769; padding: 24px; }
+@media (max-width: 580px) {
+  .sponsorship-document { grid-template-columns: 1fr; }
+  .sponsorship-cover { max-width: 260px; margin-inline: auto; }
+  .sponsorship-document-actions { flex-direction: column; align-items: stretch; }
+  .sponsorship-document-actions .button { justify-content: center; }
+}

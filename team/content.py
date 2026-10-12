@@ -38,17 +38,23 @@ ENGINEERING_SYSTEMS = (
     ("02", "Powertrain", "Motor, inverter, drivetrain, and the systems that turn electrical energy into motion."),
     ("03", "Low Voltage/Controls", "Wiring harnesses, sensors, embedded software, and vehicle control systems."),
     ("04", "Frame", "Chassis structure, packaging, mounting points, and fabrication planning."),
-    ("05", "Suspensions", "Suspension geometry, steering, wheel assemblies, and vehicle dynamics."),
+    ("05", "Suspension", "Suspension geometry, steering, wheel assemblies, and vehicle dynamics."),
 )
 
 PROGRAM_METRICS = (
     ("01", "first", "FSAE EV team at Sacramento State"),
     ("20+", "students", "at our first team meeting"),
-    ("05", "sections", "working toward one car"),
+    ("06", "sections", "working toward one car"),
     ("2027", "finish line", "Formula SAE Electric"),
 )
 
 FEATURED_GALLERY_IMAGES = (
+    {
+        "image_path": "images/team-trackside.webp",
+        "title": "Together at the track",
+        "caption": "Electric Sting Racing team members spending time together trackside.",
+        "alt_text": "Five Electric Sting Racing team members outdoors beside a racetrack under a blue sky.",
+    },
     {
         "image_path": "images/team-launch.webp",
         "title": "The first team meeting",

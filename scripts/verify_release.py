@@ -1,4 +1,4 @@
-"""Dependency-free checks for the exact v6 release contents, not a Django test."""
+"""Dependency-free checks for the exact v7 release contents, not a Django test."""
 
 import ast
 import hashlib
@@ -63,7 +63,7 @@ def main():
 
     base = (ROOT / "templates/base.html").read_text()
     check(base.count(LOGO) == 3, "Header, footer, and favicon must use the new mascot")
-    check('content="es-sponsorship-v6"' in base, "Release marker missing")
+    check('content="es-sponsorship-v7"' in base, "Release marker missing")
     check("css/site-v5.css" in base, "New stylesheet not referenced")
     check("js/site-v5.js" in base, "New JavaScript not referenced")
     css = (ROOT / "static/css/site-v5.css").read_text()
@@ -98,12 +98,12 @@ def main():
     tree = ast.parse((ROOT / "team/models.py").read_text())
     member = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == "TeamMember")
     choices = next(node for node in member.body if isinstance(node, ast.Assign) and node.targets[0].id == "SUBTEAM_CHOICES")
-    expected = [("high_voltage", "High Voltage"), ("powertrain", "Powertrain"),
-                ("low_voltage_controls", "Low Voltage/Controls"), ("frame", "Frame"), ("suspensions", "Suspensions")]
-    check(ast.literal_eval(choices.value) == expected, "Roster choices/order must match requested five sections")
+    expected = [("business", "Business"), ("high_voltage", "High Voltage"), ("powertrain", "Powertrain"),
+                ("low_voltage_controls", "Low Voltage/Controls"), ("frame", "Frame"), ("suspensions", "Suspension")]
+    check(ast.literal_eval(choices.value) == expected, "Roster choices/order must match requested six sections")
     content_tree = ast.parse((ROOT / "team/content.py").read_text())
     systems = next(node for node in content_tree.body if isinstance(node, ast.Assign) and node.targets[0].id == "ENGINEERING_SYSTEMS")
-    check([item[1] for item in ast.literal_eval(systems.value)] == [label for _, label in expected], "Home and roster sections differ")
+    check([item[1] for item in ast.literal_eval(systems.value)] == [label for _, label in expected[1:]], "Home and roster sections differ")
     check((ROOT / "team/migrations/0004_roster_sections.py").is_file(), "Roster data migration missing")
     package_tree = ast.parse((ROOT / "team/migrations/0005_restore_sponsorship_packages.py").read_text())
     packages = next(node for node in package_tree.body if isinstance(node, ast.Assign) and node.targets[0].id == "PACKAGES")
