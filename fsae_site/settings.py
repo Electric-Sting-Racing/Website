@@ -64,7 +64,7 @@ if not DEBUG:
 TEAM_NAME = os.getenv("TEAM_NAME", "ELECTRIC STING RACING")
 TEAM_SCHOOL = os.getenv("TEAM_SCHOOL", "SACRAMENTO STATE")
 TEAM_LOCATION = os.getenv("TEAM_LOCATION", "Sacramento State / Engineering & Computer Science")
-TEAM_EMAIL = os.getenv("TEAM_EMAIL", "electricstingracing@sacstate.edu")
+TEAM_EMAIL = os.getenv("TEAM_EMAIL", "electricsting@csus.edu")
 TEAM_SEASON = os.getenv("TEAM_SEASON", "2026 — 2027")
 
 INSTALLED_APPS = [
