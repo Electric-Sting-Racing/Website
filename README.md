@@ -51,18 +51,110 @@ The web container listens on `127.0.0.1:8000`; put Nginx in front of it as plann
 
 The database is not published to the host. Compose uses a named PostgreSQL volume, waits for a database health check, and keeps the one-shot migration job separate from the web process. Run migrations explicitly during releases before switching traffic.
 
-## Updating an existing server
+## Updating production
 
-Keep the existing database and environment configuration. After pulling a new version, install requirements if they changed, then run:
+There is no automatic deploy. CI tests every push and builds the image, but nothing publishes it. Production is updated by hand on the server that runs the Docker Compose stack from this repository, by whoever holds SSH access to it. Each step below is run on that server unless stated otherwise.
+
+1. **Get the change onto `main`.** Open a pull request, wait for the `CI` workflow to pass, and merge. Deploy only commits that are on `main` and green in CI.
+
+2. **Connect to the server and go to the checkout.**
+
+   ```bash
+   ssh <deploy-user>@<production-host>
+   cd /path/to/Website
+   ```
+
+3. **Back up the database first.** The database is not published to the host, so run `pg_dump` inside the `db` container. Keep the file somewhere off the server as well.
+
+   ```bash
+   mkdir -p backups
+   docker compose exec -T db pg_dump -U fsae_app -d fsae --format=custom --no-owner --no-privileges \
+     > "backups/fsae-$(date -u +%Y%m%dT%H%M%SZ).dump"
+   ```
+
+4. **Pull the new version.** Do not edit files on the server; `.env` and `secrets/` are ignored by Git and survive the pull.
+
+   ```bash
+   git fetch origin
+   git checkout main
+   git pull --ff-only origin main
+   git log -1 --oneline   # note this commit in case you need to roll back
+   ```
+
+5. **Build the new image.** `collectstatic` runs during the build, so static files are part of the image.
+
+   ```bash
+   docker compose build --pull web
+   ```
+
+6. **Run migrations.** This uses a one-shot container and leaves the current site serving traffic until the next step.
+
+   ```bash
+   docker compose --profile ops run --rm migrate
+   ```
+
+   A migration that fails on PostgreSQL rolls back by itself. Fix the cause, pull the fix, and run this step again. Do not use `--fake`, reset the database, or delete data to get past a failure.
+
+7. **Switch traffic to the new image.**
+
+   ```bash
+   docker compose up -d web
+   docker compose ps
+   ```
+
+   If Nginx serves `/static/` from a host directory instead of proxying to WhiteNoise, refresh that directory from the new image:
+
+   ```bash
+   docker compose cp web:/app/staticfiles/. /path/nginx/serves/as/static/
+   ```
+
+8. **Verify.** The health check needs the same `Host` and `X-Forwarded-Proto` headers the proxy sends.
+
+   ```bash
+   docker compose logs --tail=50 web
+   curl -s -o /dev/null -w '%{http_code}\n' -H 'Host: <public-hostname>' -H 'X-Forwarded-Proto: https' http://127.0.0.1:8000/healthz/
+   curl -s -o /dev/null -w '%{http_code}\n' https://<public-hostname>/
+   ```
+
+   Expect `200` from both. Then load the home, team, sponsors, and gallery pages in a browser. For a bigger release, run the `Staging audit` workflow in GitHub Actions against the public URL; it checks `/healthz/`, Lighthouse, and accessibility.
+
+9. **Clean up.** Old images accumulate on the server.
+
+   ```bash
+   docker image prune -f
+   ```
+
+### Rolling back
+
+Check out the commit noted in step 4, rebuild, and restart:
 
 ```bash
-python manage.py migrate
-python manage.py collectstatic --noinput
+git checkout <previous-commit>
+docker compose build web
+docker compose up -d web
 ```
 
-Restart the application afterwards. With Docker, rebuild the image, run `docker compose --profile ops run --rm migrate`, then `docker compose up -d web`.
+This only reverts the code. If the release added a migration and the old code cannot run against the new schema, reverse it before restarting, naming the last migration the old code shipped with:
 
-A migration that fails on PostgreSQL rolls back; fix the cause and run `migrate` again. Do not use `--fake`, reset the database, or delete data to get past a failure. Never run `seed_demo` against real team content.
+```bash
+docker compose --profile ops run --rm migrate python manage.py migrate team <previous-migration-number>
+```
+
+Restoring the backup from step 3 is the last resort; it discards every admin change made since the backup.
+
+### Without Docker
+
+If the server runs the app from a virtual environment behind a process manager instead of Compose, the equivalent steps after `git pull --ff-only` are:
+
+```bash
+source .venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py collectstatic --noinput
+sudo systemctl restart <gunicorn-service>
+```
+
+Never run `seed_demo` against real team content.
 
 ## Site content
 
