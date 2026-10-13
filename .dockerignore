@@ -1,0 +1,23 @@
+# Never copy secrets or local configuration into the image.
+.env
+.env.*
+secrets/
+
+# Version control and CI
+.git/
+.github/
+
+# Local data and build output; collectstatic runs inside the image.
+db.sqlite3
+staticfiles/
+media/
+backups/
+artifacts/
+
+# Development environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+node_modules/
+.DS_Store
