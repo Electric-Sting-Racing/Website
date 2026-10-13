@@ -275,6 +275,8 @@ h1 em, h2 em { color: var(--acid); font: inherit; font-style: italic; letter-spa
 .event-date strong { color: var(--acid); font: 700 58px/.8 var(--display); }
 .event-details h2 { margin: 0 0 8px; color: var(--paper); font-size: 31px; line-height: .9; }
 .event-details p { max-width: 600px; margin: 13px 0 0; color: var(--muted); }
+.event-past-heading { margin-top: 72px; }
+.event-row-past .event-date strong, .event-row-past .event-details h2 { color: var(--muted); }
 .event-meta { display: flex; gap: 20px; color: var(--acid); font: 10px var(--mono); text-transform: uppercase; }
 
 .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 55px 24px; }

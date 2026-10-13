@@ -5,6 +5,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.db import DatabaseError, connection
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 from django.views.decorators.http import require_GET
 
 from .content import ENGINEERING_SYSTEMS, FEATURED_GALLERY_IMAGES, PROGRAM_METRICS, PROGRAM_PHASES
@@ -78,7 +79,12 @@ def sponsors(request):
 
 
 def events(request):
-    return render(request, "team/events.html", {"events": Event.objects.filter(is_public=True)})
+    public_events = Event.objects.filter(is_public=True)
+    today = timezone.localdate()
+    return render(request, "team/events.html", {
+        "events": public_events.filter(date__gte=today),
+        "past_events": public_events.filter(date__lt=today).order_by("-date", "title")[:6],
+    })
 
 
 def gallery(request):
