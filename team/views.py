@@ -81,25 +81,24 @@ def events(request):
     return render(request, "team/events.html", {"events": Event.objects.filter(is_public=True)})
 
 
-def gallery(request):
+def _static_url(path):
     try:
-        featured_images = [
-            {
-                **image,
-                "image_url": staticfiles_storage.url(image["image_path"]),
-            }
-            for image in FEATURED_GALLERY_IMAGES
-        ]
+        return staticfiles_storage.url(path)
     except ValueError:
         # The manifest is created during the production image build. This
         # fallback keeps the gallery available in local test environments.
-        featured_images = [
-            {
-                **image,
-                "image_url": f"{settings.STATIC_URL}{image['image_path']}",
-            }
-            for image in FEATURED_GALLERY_IMAGES
-        ]
+        return f"{settings.STATIC_URL}{path}"
+
+
+def gallery(request):
+    featured_images = [
+        {
+            **image,
+            "image_url": _static_url(image["image_path"]),
+            "srcset": ", ".join(f"{_static_url(path)} {width}w" for path, width in image["srcset_paths"]),
+        }
+        for image in FEATURED_GALLERY_IMAGES
+    ]
 
     managed_images = list(GalleryImage.objects.filter(is_published=True))
     return render(request, "team/gallery.html", {"images": [*featured_images, *managed_images]})
