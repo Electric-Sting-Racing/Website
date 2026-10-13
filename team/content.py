@@ -51,18 +51,38 @@ PROGRAM_METRICS = (
 FEATURED_GALLERY_IMAGES = (
     {
         "image_path": "images/team-trackside.webp",
+        "width": 1024,
+        "height": 769,
+        "srcset_paths": (("images/team-trackside-800.webp", 800), ("images/team-trackside.webp", 1024)),
+        "sizes": "(max-width: 580px) 100vw, (max-width: 1050px) 50vw, 620px",
         "title": "Together at the track",
         "caption": "Electric Sting Racing team members spending time together trackside.",
         "alt_text": "Five Electric Sting Racing team members outdoors beside a racetrack under a blue sky.",
     },
     {
         "image_path": "images/team-launch.webp",
+        "width": 2048,
+        "height": 1536,
+        "srcset_paths": (
+            ("images/team-launch-800.webp", 800),
+            ("images/team-launch-1280.webp", 1280),
+            ("images/team-launch.webp", 2048),
+        ),
+        "sizes": "(max-width: 580px) 100vw, (max-width: 1050px) 50vw, 620px",
         "title": "The first team meeting",
         "caption": "A room full of students, questions, and the energy to build something new.",
         "alt_text": "Electric Sting Racing members gathered in a classroom during a team meeting.",
     },
     {
         "image_path": "images/team-outreach.webp",
+        "width": 2048,
+        "height": 1536,
+        "srcset_paths": (
+            ("images/team-outreach-800.webp", 800),
+            ("images/team-outreach-1280.webp", 1280),
+            ("images/team-outreach.webp", 2048),
+        ),
+        "sizes": "(max-width: 580px) 100vw, 1260px",
         "title": "Learning in public",
         "caption": "The work starts with sharing the plan, asking better questions, and bringing people in.",
         "alt_text": "Electric Sting Racing students gathered outside for a team presentation.",
