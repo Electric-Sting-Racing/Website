@@ -1,10 +1,14 @@
+from django.contrib.sitemaps.views import sitemap
 from django.urls import path
 
 from . import views
+from .seo import SITEMAPS, robots_txt
 
 
 urlpatterns = [
     path("healthz/", views.healthz, name="healthz"),
+    path("robots.txt", robots_txt, name="robots-txt"),
+    path("sitemap.xml", sitemap, {"sitemaps": SITEMAPS}, name="sitemap"),
     path("", views.home, name="home"),
     path("team/", views.roster, name="roster"),
     path("cars/", views.cars, name="cars"),
