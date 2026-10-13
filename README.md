@@ -1,9 +1,5 @@
 # Electric Sting Racing
 
-For the uploaded proposal, photo, and nine team leads, start with [RELEASE-V7.md](RELEASE-V7.md).
-
-For the restored sponsorship packages and public-page cleanup, start with [RELEASE-V6.md](RELEASE-V6.md). The neon theme, roster leads, scroll effects, mobile layout, and startup instructions are covered in [RELEASE-V5.md](RELEASE-V5.md).
-
 A maintainable Django site for Sacramento State's Formula SAE Electric team. It includes the public site, a Django admin, PostgreSQL production support, structured logs, a database health endpoint, and deployment checks.
 
 ## Local development
@@ -54,6 +50,25 @@ docker compose up -d web
 The web container listens on `127.0.0.1:8000`; put Nginx in front of it as planned. The proxy must pass `X-Forwarded-Proto: https`. Nginx should serve `/static/` directly when practical; WhiteNoise is included as a fallback.
 
 The database is not published to the host. Compose uses a named PostgreSQL volume, waits for a database health check, and keeps the one-shot migration job separate from the web process. Run migrations explicitly during releases before switching traffic.
+
+## Updating an existing server
+
+Keep the existing database and environment configuration. After pulling a new version, install requirements if they changed, then run:
+
+```bash
+python manage.py migrate
+python manage.py collectstatic --noinput
+```
+
+Restart the application afterwards. With Docker, rebuild the image, run `docker compose --profile ops run --rm migrate`, then `docker compose up -d web`.
+
+A migration that fails on PostgreSQL rolls back; fix the cause and run `migrate` again. Do not use `--fake`, reset the database, or delete data to get past a failure. Never run `seed_demo` against real team content.
+
+## Site content
+
+- Team members, leads, cars, sponsors, sponsorship tiers, events, and extra gallery photos are managed in `/admin/`. Members appear on the roster only once they have a section; several co-leads per section are supported.
+- The sponsorship proposal PDF lives in `static/documents/` and its cover preview in `static/images/sponsorship-cover.webp`. Replace both together when the proposal changes.
+- Built-in team photos and short program copy (roadmap, metrics, engineering sections) live in `static/images/` and `team/content.py`.
 
 ## Backups and restore testing
 
