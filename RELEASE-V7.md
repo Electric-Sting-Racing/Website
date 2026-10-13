@@ -5,7 +5,7 @@ and separate view/download actions. Its benefit comparison now reflects the
 proposal, including website recognition, social media, progress updates,
 event invitations, recruiting, and merchandise. Those fields remain editable
 through the Sponsorship Tier admin. Sponsorship inquiry links use the email
-printed in the proposal: Electricsting@csus.edu.
+printed in the proposal: electricsting@csus.edu.
 
 The supplied trackside photo appears on the homepage and in the gallery.
 Both the PDF and photo are included unchanged; the cover preview is generated

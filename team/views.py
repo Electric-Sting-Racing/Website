@@ -74,7 +74,6 @@ def sponsors(request):
     return render(request, "team/sponsors.html", {
         "sponsor_groups": _group_by_choice(active_sponsors, Sponsor.TIER_CHOICES, "tier"),
         "sponsorship_tiers": list(SponsorshipTier.objects.filter(active=True)),
-        "sponsorship_email": "Electricsting@csus.edu",
     })
 
 
