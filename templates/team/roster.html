@@ -13,7 +13,7 @@
       <div class="member-grid">
         {% for member in subteam_members %}
         <article class="member-card reveal{% if member.is_lead %} member-card-lead{% endif %}">
-          <div class="member-card-top"><div class="member-avatar {% if member.is_lead %}member-avatar-lead{% endif %}"><span>{{ member.name|slice:":1" }}</span><i aria-hidden="true"></i></div>{% if member.is_lead %}<span class="lead-badge">Section lead</span>{% endif %}</div>
+          <div class="member-card-top"><div class="member-avatar {% if member.is_lead %}member-avatar-lead{% endif %}">{% if member.photo_url %}<img src="{{ member.photo_url }}" alt="" width="47" height="47" loading="lazy" decoding="async">{% else %}<span>{{ member.name|slice:":1" }}</span>{% endif %}<i aria-hidden="true"></i></div>{% if member.is_lead %}<span class="lead-badge">Section lead</span>{% endif %}</div>
           <div class="member-content"><div><h3>{{ member.name }}</h3><span class="member-role">{{ member.role }}</span></div><span class="member-year mono">{{ member.year }}</span></div>
           {% if member.bio %}<p>{{ member.bio }}</p>{% endif %}
         </article>

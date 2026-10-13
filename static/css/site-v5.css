@@ -197,6 +197,7 @@ h1 em, h2 em { color: var(--acid); font: inherit; font-style: italic; letter-spa
 .member-card { min-height: 190px; padding: 22px; background: var(--forest); border: 1px solid var(--line); }
 .member-card:hover { border-color: var(--acid); }
 .member-avatar { position: relative; display: grid; width: 47px; height: 47px; margin-bottom: 21px; place-items: center; color: var(--night); background: var(--green); font: 700 21px var(--display); border-radius: 50%; }
+.member-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 .member-avatar-lead { background: var(--acid); }
 .member-avatar i { position: absolute; right: -2px; bottom: 0; width: 10px; height: 10px; background: var(--acid); border: 2px solid var(--forest); border-radius: 50%; }
 .member-content { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
@@ -245,13 +246,14 @@ h1 em, h2 em { color: var(--acid); font: inherit; font-style: italic; letter-spa
 .sponsor-tier { margin-top: 75px; }
 .sponsor-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; }
 .sponsor-card { position: relative; display: grid; min-height: 190px; gap: 10px; padding: 22px; background: var(--forest); border: 1px solid var(--line); transition: background .2s ease, color .2s ease, transform .2s ease; }
-.sponsor-card:hover { color: var(--night); background: var(--acid); transform: translateY(-3px); }
+a.sponsor-card:hover { color: var(--night); background: var(--acid); transform: translateY(-3px); }
 .sponsor-symbol { display: grid; width: 35px; height: 35px; place-items: center; color: var(--night); background: var(--acid); font: 700 18px var(--display); }
+.sponsor-logo { width: auto; max-width: 140px; height: 35px; object-fit: contain; object-position: left center; }
 .sponsor-card strong { font: 700 22px/.9 var(--display); letter-spacing: .01em; }
 .sponsor-card p { max-width: 200px; margin: 0; color: var(--muted); font-size: 12px; }
-.sponsor-card:hover p { color: rgba(2, 8, 5, .72); }
+a.sponsor-card:hover p { color: rgba(2, 8, 5, .72); }
 .sponsor-arrow { position: absolute; top: 22px; right: 22px; color: var(--acid); }
-.sponsor-card:hover .sponsor-arrow { color: var(--night); }
+a.sponsor-card:hover .sponsor-arrow { color: var(--night); }
 .sponsor-cta-grid { display: grid; grid-template-columns: 1fr 1.35fr auto; align-items: end; gap: 40px; }
 .sponsor-cta h2 { margin: 0; color: var(--paper); font-size: clamp(55px, 7vw, 95px); line-height: .78; }
 
