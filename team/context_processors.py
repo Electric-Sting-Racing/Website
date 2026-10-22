@@ -9,7 +9,7 @@ from .seo import page_meta
 def _featured_sponsors():
     # Sitewide credit must never take a page down if the database is unavailable.
     try:
-        return list(Sponsor.objects.filter(active=True, tier="champion"))
+        return list(Sponsor.objects.filter(active=True)[:6])
     except DatabaseError:
         return []
 
