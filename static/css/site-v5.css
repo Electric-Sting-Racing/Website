@@ -183,6 +183,13 @@ h1 em, h2 em { color: var(--acid); font: inherit; font-style: italic; letter-spa
 .sponsor-wall { display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
 .sponsor-wall span { display: grid; min-height: 90px; place-items: center; padding: 18px; color: var(--muted); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); font: 600 17px var(--display); text-align: center; text-transform: uppercase; }
 
+.sponsor-wall-logo { max-width: 140px; max-height: 40px; object-fit: contain; }
+.footer-sponsors { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-top: 22px; }
+.footer-sponsors a, .footer-sponsors strong { color: var(--paper); font: 700 18px var(--display); letter-spacing: .02em; text-transform: uppercase; }
+.footer-sponsors a:hover { color: var(--acid); }
+.car-sponsors { margin: 22px 0 0; color: var(--muted); }
+.car-sponsors a { color: inherit; border-bottom: 1px solid currentColor; }
+
 .page-hero { padding: 110px 0 100px; border-bottom: 1px solid var(--line); }
 .page-hero-grid { display: grid; grid-template-columns: 1.1fr .9fr; align-items: end; gap: 10%; }
 .page-hero h1 { margin: 20px 0 0; color: var(--paper); font-size: clamp(62px, 8vw, 120px); line-height: .8; }

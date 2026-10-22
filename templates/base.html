@@ -67,6 +67,7 @@
       <div class="footer-brand">
         <a class="brand" href="{% url 'home' %}"><span class="brand-mark" aria-hidden="true"><img src="{% static 'images/electric-sting-mascot-v4.webp' %}" alt="" width="2048" height="1373"></span><span class="brand-copy"><strong>{{ site_name }}</strong><small>{{ school_name }} / FORMULA SAE ELECTRIC</small></span></a>
         <p>Sacramento State's first electric Formula SAE team. Built from zero. Built to compete.</p>
+        {% if featured_sponsors %}<p class="footer-sponsors"><span class="eyebrow">Supported by</span>{% for sponsor in featured_sponsors %}{% if sponsor.website %}<a href="{{ sponsor.website }}" target="_blank" rel="noreferrer">{{ sponsor.name }}</a>{% else %}<strong>{{ sponsor.name }}</strong>{% endif %}{% endfor %}</p>{% endif %}
       </div>
       <div class="footer-links">
         <div><span class="eyebrow">Explore</span><a href="{% url 'roster' %}">The team</a><a href="{% url 'cars' %}">Car in development</a><a href="{% url 'gallery' %}">Gallery</a><a href="{% url 'events' %}">Events</a></div>

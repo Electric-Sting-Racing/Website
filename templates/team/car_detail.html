@@ -34,6 +34,7 @@
         <div><span class="mono">SPECIFICATIONS</span><strong>Under development</strong></div>
         <div><span class="mono">TEST RESULTS</span><strong>Not available yet</strong></div>
       </div>
+      {% if featured_sponsors %}<p class="car-sponsors mono">SUPPORTED BY {% for sponsor in featured_sponsors %}{% if sponsor.website %}<a href="{{ sponsor.website }}" target="_blank" rel="noreferrer">{{ sponsor.name|upper }}</a>{% else %}{{ sponsor.name|upper }}{% endif %}{% if not forloop.last %} / {% endif %}{% endfor %}</p>{% endif %}
       <a class="button button-primary design-action" href="{% url 'sponsors' %}">Support the first build <span aria-hidden="true">↗</span></a>
     </div>
   </div>
