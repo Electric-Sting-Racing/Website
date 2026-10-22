@@ -1,7 +1,7 @@
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from .models import Sponsor, TeamMember
+from .models import Car, Sponsor, TeamMember
 
 
 @override_settings(STORAGES={
@@ -24,3 +24,16 @@ class AdminMediaTests(TestCase):
         self.assertContains(response, 'href="https://acme.example"')
         self.assertContains(response, '<div class="sponsor-card">')
         self.assertNotContains(response, 'href="#"')
+
+    def test_active_sponsors_credited_in_footer_and_car_page_but_not_inactive(self):
+        Sponsor.objects.create(name="Tesla", website="https://www.tesla.com")
+        Sponsor.objects.create(name="Old Shop", active=False)
+        Car.objects.create(name="EV1", slug="ev1", season="2026")
+        for url in (reverse("contact"), reverse("car-detail", kwargs={"slug": "ev1"})):
+            response = self.client.get(url)
+            self.assertContains(response, 'href="https://www.tesla.com"')
+            self.assertNotContains(response, "Old Shop")
+
+    def test_home_wall_uses_logo_when_set(self):
+        Sponsor.objects.create(name="Acme", logo_url="https://acme.example/logo.png")
+        self.assertContains(self.client.get(reverse("home")), 'class="sponsor-wall-logo" src="https://acme.example/logo.png"')
