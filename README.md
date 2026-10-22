@@ -81,10 +81,10 @@ There is no automatic deploy. CI tests every push and builds the image, but noth
    git log -1 --oneline   # note this commit in case you need to roll back
    ```
 
-5. **Build the new image.** `collectstatic` runs during the build, so static files are part of the image.
+5. **Build the new images.** `collectstatic` runs during the build, so static files are part of the image. `web` and `migrate` are separate images, so build both; otherwise the migration step runs the old code and reports "No migrations to apply".
 
    ```bash
-   docker compose build --pull web
+   docker compose --profile ops build --pull web migrate
    ```
 
 6. **Run migrations.** This uses a one-shot container and leaves the current site serving traffic until the next step.
@@ -130,7 +130,7 @@ Check out the commit noted in step 4, rebuild, and restart:
 
 ```bash
 git checkout <previous-commit>
-docker compose build web
+docker compose --profile ops build web migrate
 docker compose up -d web
 ```
 
