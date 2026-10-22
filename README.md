@@ -159,6 +159,7 @@ Never run `seed_demo` against real team content.
 ## Site content
 
 - Team members, leads, cars, sponsors, sponsorship tiers, events, and extra gallery photos are managed in `/admin/`. Members appear on the roster only once they have a section; several co-leads per section are supported.
+- Sponsor logos are trademarks. Only publish a sponsor's name and logo with their written permission (a sponsorship agreement or an email from them), use the file they supply unaltered, and follow their brand guidelines. Do not imply endorsement beyond the sponsorship. Deactivate the sponsor in `/admin/` to remove it from every page.
 - The sponsorship proposal PDF lives in `static/documents/` and its cover preview in `static/images/sponsorship-cover.webp`. Replace both together when the proposal changes.
 - Built-in team photos and short program copy (roadmap, metrics, engineering sections) live in `static/images/` and `team/content.py`.
 
