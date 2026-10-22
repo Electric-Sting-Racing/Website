@@ -1,11 +1,22 @@
 from django.conf import settings
+from django.db import DatabaseError
 from django.templatetags.static import static
 
+from .models import Sponsor
 from .seo import page_meta
+
+
+def _featured_sponsors():
+    # Sitewide credit must never take a page down if the database is unavailable.
+    try:
+        return list(Sponsor.objects.filter(active=True, tier="champion"))
+    except DatabaseError:
+        return []
 
 
 def branding(request):
     return {
+        "featured_sponsors": _featured_sponsors(),
         **page_meta(request, settings.TEAM_NAME),
         "site_name": settings.TEAM_NAME,
         "school_name": settings.TEAM_SCHOOL,
