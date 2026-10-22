@@ -46,8 +46,17 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - name: Install PostgreSQL client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      # Match the postgres:16 service and the production image. An unpinned client can be
+      # newer than the server, and a v17 pg_dump writes SET transaction_timeout, which
+      # a v16 server rejects during pg_restore.
+      - name: Install PostgreSQL 16 client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-16
+          echo "/usr/lib/postgresql/16/bin" >> "$GITHUB_PATH"
+
+      - name: Show PostgreSQL client version
+        run: pg_dump --version
 
       - name: Install dependencies
         run: |
