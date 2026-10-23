@@ -76,6 +76,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
     "team",
+    # Keep last: its post_migrate hook needs every other app's permissions to exist.
+    "security",
 ]
 
 MIDDLEWARE = [
@@ -146,6 +148,16 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+
+AUTHENTICATION_BACKENDS = ["security.backends.LockoutBackend"]
+# Sign-in lockout: after this many failures for one username (or from one client) inside the
+# window, even the correct password is refused until the window passes.
+LOGIN_MAX_FAILURES_PER_USER = int(os.getenv("DJANGO_LOGIN_MAX_FAILURES", "5"))
+LOGIN_MAX_FAILURES_PER_IP = int(os.getenv("DJANGO_LOGIN_MAX_FAILURES_PER_IP", "20"))
+LOGIN_LOCKOUT_MINUTES = int(os.getenv("DJANGO_LOGIN_LOCKOUT_MINUTES", "15"))
+# Behind a reverse proxy every request seems to come from the proxy. Name the header it sets
+# (e.g. X-Forwarded-For) so lockouts are per client; leave empty when the app is exposed directly.
+SECURITY_CLIENT_IP_HEADER = os.getenv("DJANGO_CLIENT_IP_HEADER", "")
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

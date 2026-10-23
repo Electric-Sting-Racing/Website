@@ -210,6 +210,16 @@ npx --yes @lhci/cli@0.14.0 autorun --config=lighthouserc.json --collect.url=http
 npx --yes @axe-core/cli@4.10.2 https://staging.example.com
 ```
 
+## Admin accounts
+
+Day-to-day editors should not be superusers. Migrations create a **Content editors** group that can add, change, and delete site content (roster, cars, sponsors, tiers, events, gallery) but cannot touch users or groups.
+
+- **Give someone access.** A superuser opens `/admin/` → Users → Add user, ticks **Staff status**, leaves **Superuser status** off, and picks **Content editors** under Groups. Share the first password through a secure channel and ask them to change it.
+- **Take access away.** Users → untick **Active** (this also ends their sessions) instead of deleting them, so the change history stays meaningful. Do this for every outgoing member during the annual handoff.
+- **The technical owner** is the only superuser. Create one inside the running container with `docker compose exec web python manage.py createsuperuser`, and deactivate the previous owner's account.
+
+Sign-in is rate limited: five failed attempts for one username, or twenty from one client address, in 15 minutes locks sign-in until the window passes, and even the correct password is refused meanwhile. Wait 15 minutes, or a superuser can delete the rows under **Failed sign-ins** in the admin. Behind a reverse proxy, set `DJANGO_CLIENT_IP_HEADER=X-Forwarded-For` (the header your proxy sets) so the limit is per visitor rather than shared by everyone; only do this when the proxy overwrites that header. Tune with `DJANGO_LOGIN_MAX_FAILURES`, `DJANGO_LOGIN_MAX_FAILURES_PER_IP`, and `DJANGO_LOGIN_LOCKOUT_MINUTES`. Only hashed client addresses are stored, and entries older than a day are removed the next time anyone attempts to sign in.
+
 ## Annual handoff
 
 1. Export or back up the production database and verify a restore.
@@ -217,3 +227,4 @@ npx --yes @axe-core/cli@4.10.2 https://staging.example.com
 3. Archive outgoing members with `active=False`; do not delete historical records.
 4. Update sponsors, events, and optional gallery additions in `/admin/`; the built-in team photos ship with the site.
 5. Rotate the technical owner, deployment secrets, and the notes in this README.
+6. Deactivate the admin accounts of everyone who has left (see Admin accounts).
