@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.urls import reverse
 
 
@@ -65,6 +65,20 @@ class Car(models.Model):
 
     def get_absolute_url(self):
         return reverse("car-detail", kwargs={"slug": self.slug})
+
+    def save(self, *args, **kwargs):
+        # Only one car can be the current one; the home page features it. A partial save that
+        # leaves is_current alone must not change which car that is.
+        update_fields = kwargs.get("update_fields")
+        sets_current = self.is_current and (update_fields is None or "is_current" in update_fields)
+        with transaction.atomic():
+            if sets_current:
+                # Take a lock on every car (there are only a few) so two people marking different
+                # cars current at once run one after the other and the last one wins.
+                list(Car.objects.select_for_update().values_list("pk", flat=True))
+            super().save(*args, **kwargs)
+            if sets_current:
+                Car.objects.exclude(pk=self.pk).filter(is_current=True).update(is_current=False)
 
 
 class Sponsor(models.Model):

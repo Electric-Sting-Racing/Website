@@ -214,7 +214,7 @@ npx --yes @axe-core/cli@4.10.2 https://staging.example.com
 ## Annual handoff
 
 1. Export or back up the production database and verify a restore.
-2. Add the new season's `Car` record and mark only one car as current.
-3. Archive outgoing members with `active=False`; do not delete historical records.
+2. Add the new season's `Car` record and tick **current**; the previous current car is cleared automatically. The car form's "Kept for later" section lists fields the public pages do not show yet, and you can leave them empty.
+3. Archive outgoing members: in the Team members list, tick them and choose **Archive selected members**. They leave the roster but their record stays; do not delete historical records.
 4. Update sponsors, events, and optional gallery additions in `/admin/`; the built-in team photos ship with the site.
 5. Rotate the technical owner, deployment secrets, and the notes in this README.
