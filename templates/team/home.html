@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}{{ site_name }} | {{ school_name }} Formula SAE Electric{% endblock %}
+{% block extra_head %}<script type="application/ld+json">{{ organization_jsonld }}</script>{% endblock %}
 {% block content %}
 <section class="hero-section dark-section hex-bg">
   <div class="wrap hero-grid">

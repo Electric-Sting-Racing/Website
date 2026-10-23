@@ -1,6 +1,10 @@
+import json
+
 from django.contrib.sitemaps import Sitemap
 from django.http import HttpResponse
+from django.templatetags.static import static
 from django.urls import reverse
+from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_GET
 
 from .models import Car
@@ -35,8 +39,39 @@ PAGE_META = {
 }
 
 
+def car_meta(car, site_name):
+    """Link-preview text for one car. Mirrors the page, which presents the car as in design."""
+    return {
+        "og_title": f"{car.name} ({car.season}), in design | {site_name}",
+        "meta_description": (
+            f"{car.name} is {site_name.title()}'s electric Formula SAE car for the {car.season} season. "
+            "It is still in design; follow the plan and how the build will progress."
+        ),
+    }
+
+
+def organization_jsonld(request, site_name, school_name, email):
+    """schema.org Organization for the home page, as a script-safe JSON string."""
+    data = {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": site_name.title(),
+        "description": "A student-built electric Formula SAE team.",
+        "url": request.build_absolute_uri("/"),
+        "logo": request.build_absolute_uri(static("images/electric-sting-mascot-v4.webp")),
+        "email": email,
+        "parentOrganization": {"@type": "CollegeOrUniversity", "name": school_name.title()},
+        "sameAs": ["https://www.instagram.com/electricstingcsus"],
+    }
+    # Escape "<" so a value can never close the script element.
+    return mark_safe(json.dumps(data, ensure_ascii=False).replace("<", "\\u003c"))
+
+
 def page_meta(request, site_name):
     """Return link-preview title and description for the page being rendered."""
+    override = getattr(request, "seo_meta", None)
+    if override:
+        return override
     match = getattr(request, "resolver_match", None)
     label, description = PAGE_META.get(match.url_name if match else None, (None, None))
     return {

@@ -9,6 +9,7 @@ from django.views.decorators.http import require_GET
 
 from .content import ENGINEERING_SYSTEMS, FEATURED_GALLERY_IMAGES, PROGRAM_METRICS, PROGRAM_PHASES
 from .models import Car, Event, GalleryImage, Sponsor, SponsorshipTier, TeamMember
+from .seo import car_meta
 
 
 def _group_by_choice(items, choices, field_name, include_empty=False):
@@ -66,6 +67,7 @@ def cars(request):
 
 def car_detail(request, slug):
     car = get_object_or_404(Car, slug=slug)
+    request.seo_meta = car_meta(car, settings.TEAM_NAME)
     return render(request, "team/car_detail.html", {"car": car})
 
 

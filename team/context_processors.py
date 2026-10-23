@@ -3,7 +3,7 @@ from django.db import DatabaseError
 from django.templatetags.static import static
 
 from .models import Sponsor
-from .seo import page_meta
+from .seo import organization_jsonld, page_meta
 
 
 def _featured_sponsors():
@@ -14,8 +14,16 @@ def _featured_sponsors():
         return []
 
 
+def _home_jsonld(request):
+    match = getattr(request, "resolver_match", None)
+    if not match or match.url_name != "home":
+        return ""
+    return organization_jsonld(request, settings.TEAM_NAME, settings.TEAM_SCHOOL, settings.TEAM_EMAIL)
+
+
 def branding(request):
     return {
+        "organization_jsonld": _home_jsonld(request),
         "featured_sponsors": _featured_sponsors(),
         **page_meta(request, settings.TEAM_NAME),
         "site_name": settings.TEAM_NAME,
