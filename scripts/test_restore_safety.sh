@@ -30,7 +30,7 @@ done
 
 if [[ "$command_text" == "SELECT current_database();" ]]; then
   case "$dsn" in
-    */target-dsn) printf '%s\n' "${TARGET_DATABASE:?}" ;;
+    */target-dsn*) printf '%s\n' "${TARGET_DATABASE:?}" ;;
     */production-dsn*) printf '%s\n' "${PRODUCTION_DATABASE:?}" ;;
     *) printf 'unexpected test database target\n' >&2; exit 2 ;;
   esac
@@ -94,4 +94,27 @@ env \
 
 test -e "$TEMP_DIR/pg_restore_called"
 grep -q 'restore test passed' "$TEMP_DIR/output.txt"
+rm -f "$TEMP_DIR/pg_restore_called"
+env \
+  PATH="$TEMP_DIR/bin:$PATH" \
+  BACKUP_FILE="$TEMP_DIR/backup.dump" \
+  RESTORE_DATABASE_URL='postgresql://restore-user:secret@restore.example/target-dsn' \
+  TARGET_DATABASE='fsae_restore' \
+  PRODUCTION_DATABASE='fsae' \
+  PG_RESTORE_MARKER="$TEMP_DIR/pg_restore_called" \
+  bash "$ROOT/scripts/restore_test_postgres.sh" >"$TEMP_DIR/output.txt" 2>&1
+grep -q 'RESTORE_DATABASE_URL contains a password' "$TEMP_DIR/output.txt"
+if grep -q 'secret' "$TEMP_DIR/output.txt"; then
+  printf 'the warning must not print the password\n' >&2
+  exit 1
+fi
+env \
+  PATH="$TEMP_DIR/bin:$PATH" \
+  BACKUP_FILE="$TEMP_DIR/backup.dump" \
+  RESTORE_DATABASE_URL='postgresql://restore.example/target-dsn?user=u&password=secret' \
+  TARGET_DATABASE='fsae_restore' \
+  PRODUCTION_DATABASE='fsae' \
+  PG_RESTORE_MARKER="$TEMP_DIR/pg_restore_called" \
+  bash "$ROOT/scripts/restore_test_postgres.sh" >"$TEMP_DIR/output.txt" 2>&1
+grep -q 'RESTORE_DATABASE_URL contains a password' "$TEMP_DIR/output.txt"
 printf 'PASS: restore refuses non-disposable and production-named targets; disposable target proceeds\n'
