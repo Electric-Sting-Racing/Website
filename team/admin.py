@@ -1,6 +1,6 @@
 from django.contrib import admin, messages
 
-from .models import Car, Event, GalleryImage, Sponsor, SponsorshipTier, TeamMember
+from .models import Car, Event, GalleryImage, Inquiry, Sponsor, SponsorshipTier, TeamMember
 
 
 @admin.register(TeamMember)
@@ -57,6 +57,19 @@ class EventAdmin(admin.ModelAdmin):
     list_display = ("title", "date", "location", "is_public")
     list_filter = ("is_public", "date")
     search_fields = ("title", "location", "description")
+
+
+@admin.register(Inquiry)
+class InquiryAdmin(admin.ModelAdmin):
+    list_display = ("created_at", "name", "topic", "organization", "email", "handled")
+    list_filter = ("handled", "topic")
+    list_editable = ("handled",)
+    search_fields = ("name", "email", "organization", "message")
+    date_hierarchy = "created_at"
+    readonly_fields = ("name", "email", "organization", "topic", "message", "created_at")
+
+    def has_add_permission(self, request):
+        return False
 
 
 @admin.register(GalleryImage)

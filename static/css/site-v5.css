@@ -303,6 +303,20 @@ a.sponsor-card:hover .sponsor-arrow { color: var(--night); }
 .contact-line { display: flex; justify-content: space-between; padding: 19px 0; color: var(--paper); border-bottom: 1px solid var(--line); font-size: 15px; }.contact-line span { color: var(--acid); }
 .contact-address { display: block; margin-top: 28px; color: var(--muted); line-height: 1.8; }
 .contact-body { background: var(--forest); }
+.inquiry-section { background: var(--night); scroll-margin-top: 80px; }
+.inquiry-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 8%; align-items: start; }
+.inquiry-lede { max-width: 420px; color: var(--muted); }
+.inquiry-form { display: grid; gap: 22px; max-width: 610px; }
+.inquiry-field label { display: block; margin-bottom: 8px; color: var(--paper); font: 600 11px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+.inquiry-field input, .inquiry-field select, .inquiry-field textarea { width: 100%; padding: 13px 14px; color: var(--paper); background: var(--forest); border: 1px solid var(--line); border-radius: 0; font: 16px/1.4 var(--sans); }
+.inquiry-field input:focus-visible, .inquiry-field select:focus-visible, .inquiry-field textarea:focus-visible { outline: 2px solid var(--acid); outline-offset: 2px; }
+.inquiry-field textarea { resize: vertical; }
+.inquiry-error, .inquiry-errors { margin: 8px 0 0; color: var(--gold); font-size: 14px; }
+.inquiry-errors ul { margin: 0; padding: 0; list-style: none; }
+.inquiry-status { margin: 0 0 24px; padding: 16px 18px; color: var(--night); background: var(--acid); font-weight: 600; }
+.inquiry-trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.inquiry-form .button { justify-self: start; cursor: pointer; }
+@media (max-width: 900px) { .inquiry-grid { grid-template-columns: 1fr; gap: 36px; } }
 .contact-body-grid > div:last-child { max-width: 610px; }.contact-body-grid p:not(.large-copy) { margin-bottom: 22px; color: var(--muted); }.contact-body-grid a:not(.button) { color: var(--paper); text-decoration: underline; text-decoration-color: var(--acid); text-underline-offset: 3px; }.contact-body-grid .button { margin-top: 16px; }
 .empty-state { padding: 42px; color: var(--muted); border: 1px dashed var(--line); font-size: 14px; }
 

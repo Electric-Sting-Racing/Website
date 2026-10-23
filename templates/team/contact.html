@@ -2,5 +2,23 @@
 {% block title %}Join the build | {{ site_name }}{% endblock %}
 {% block content %}
 <section class="contact-hero dark-section hex-bg"><div class="wrap contact-grid"><div><p class="eyebrow accent">THE GARAGE DOOR IS OPEN</p><h1>Bring a good<br><em>question.</em></h1><p class="page-hero-lede">No racing experience required. We are always looking for curious people, generous partners, and alumni who want to help the next build move.</p></div><div class="contact-panel"><span class="eyebrow">CONNECT WITH OUR TEAM</span><a href="mailto:{{ team_email }}" class="contact-line">{{ team_email }} <span>↗</span></a><a href="https://www.instagram.com/electricstingcsus" class="contact-line" target="_blank" rel="noreferrer">Instagram <span>↗</span></a><span class="mono contact-address">{{ team_location }}<br>{{ school_name }}</span></div></div></section>
-<section class="section-pad contact-body"><div class="wrap contact-body-grid"><div><p class="eyebrow">NEW MEMBERS</p><h2>Start with<br><em>the work.</em></h2></div><div><p class="large-copy">We recruit at the beginning of each semester. Come to a meeting, ask what is being tested, and find a subsystem you want to understand.</p><p>For partnerships, alumni support, or questions about the website, send the team a note at <a href="mailto:{{ team_email }}">{{ team_email }}</a>.</p><a class="button button-primary" href="mailto:{{ team_email }}?subject=I%20want%20to%20join%20the%20build">Email the team <span aria-hidden="true">↗</span></a></div></div></section>
+<section class="section-pad contact-body"><div class="wrap contact-body-grid"><div><p class="eyebrow">NEW MEMBERS</p><h2>Start with<br><em>the work.</em></h2></div><div><p class="large-copy">We recruit at the beginning of each semester. Come to a meeting, ask what is being tested, and find a subsystem you want to understand.</p><p>Prefer your own mail app? Write to <a href="mailto:{{ team_email }}">{{ team_email }}</a>.</p></div></div></section>
+<section class="section-pad inquiry-section" id="inquiry-form"><div class="wrap inquiry-grid"><div><p class="eyebrow accent">SEND A MESSAGE</p><h2>Tell us what<br>you have <em>in mind.</em></h2><p class="inquiry-lede">Joining, sponsoring, mentoring, or just curious. A real person on the team reads every message.</p></div>
+  <div>
+    {% if messages %}{% for message in messages %}<p class="inquiry-status" role="status">{{ message }}</p>{% endfor %}{% endif %}
+    <form method="post" action="{% url 'contact' %}#inquiry-form" class="inquiry-form" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="form_token" value="{{ form_token }}">
+      {% if form.non_field_errors %}<div class="inquiry-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+      {% for field in form.visible_fields %}{% if field.name != "website" %}
+      <div class="inquiry-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<p class="inquiry-error" role="alert">{{ field.errors|join:" " }}</p>{% endif %}
+      </div>
+      {% endif %}{% endfor %}
+      <div class="inquiry-trap" aria-hidden="true"><label for="{{ form.website.id_for_label }}">{{ form.website.label }}</label>{{ form.website }}</div>
+      <button class="button button-primary" type="submit">Send message <span aria-hidden="true">↗</span></button>
+    </form>
+  </div></div></section>
 {% endblock %}

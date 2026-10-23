@@ -1,14 +1,25 @@
 from collections import defaultdict
 
+import logging
+
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.staticfiles.storage import staticfiles_storage
+from django.core.mail import EmailMessage
 from django.db import DatabaseError, connection
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_GET
 
 from .content import ENGINEERING_SYSTEMS, FEATURED_GALLERY_IMAGES, PROGRAM_METRICS, PROGRAM_PHASES
+from .forms import InquiryForm, new_form_token, recent_inquiries_from, sender_hash
 from .models import Car, Event, GalleryImage, Sponsor, SponsorshipTier, TeamMember
+
+
+logger = logging.getLogger(__name__)
+
+SENT_MESSAGE = "Thanks. Your message reached the team and we will reply by email."
 
 
 def _group_by_choice(items, choices, field_name, include_empty=False):
@@ -104,5 +115,43 @@ def gallery(request):
     return render(request, "team/gallery.html", {"images": [*featured_images, *managed_images]})
 
 
+def _notify_team(inquiry):
+    """Email the team a copy. The inquiry is already saved, so a mail failure is only logged."""
+    body = (
+        f"{inquiry.name} <{inquiry.email}>\n"
+        f"Organization: {inquiry.organization or '-'}\n"
+        f"Topic: {inquiry.get_topic_display()}\n\n{inquiry.message}\n"
+    )
+    try:
+        EmailMessage(
+            subject=f"[Website] {inquiry.get_topic_display()}",
+            body=body,
+            to=[settings.TEAM_EMAIL],
+            reply_to=[inquiry.email],
+        ).send()
+    except Exception:
+        logger.exception("Could not email inquiry %s", inquiry.pk)
+
+
 def contact(request):
-    return render(request, "team/contact.html")
+    if request.method == "POST":
+        form = InquiryForm(request.POST)
+        sender = sender_hash(request)
+        if form.is_valid():
+            if form.looks_like_spam:
+                # Look successful to bots without storing or forwarding anything.
+                messages.success(request, SENT_MESSAGE)
+                return redirect(f"{reverse('contact')}#inquiry-form")
+            if recent_inquiries_from(sender) >= settings.INQUIRY_HOURLY_LIMIT:
+                form.add_error(None, "Too many messages from your connection. Please email the team directly.")
+            else:
+                inquiry = form.save(commit=False)
+                inquiry.sender_hash = sender
+                inquiry.save()
+                _notify_team(inquiry)
+                messages.success(request, SENT_MESSAGE)
+                return redirect(f"{reverse('contact')}#inquiry-form")
+    else:
+        topic = request.GET.get("topic")
+        form = InquiryForm(initial={"topic": topic} if topic else None)
+    return render(request, "team/contact.html", {"form": form, "form_token": new_form_token()})

@@ -67,6 +67,23 @@ TEAM_LOCATION = os.getenv("TEAM_LOCATION", "Sacramento State / Engineering & Com
 TEAM_EMAIL = os.getenv("TEAM_EMAIL", "electricsting@csus.edu")
 TEAM_SEASON = os.getenv("TEAM_SEASON", "2026 — 2027")
 
+# Contact form: submissions are always saved; mail is a best-effort copy to TEAM_EMAIL.
+# Without EMAIL_HOST, messages print to the application log instead of being sent.
+EMAIL_HOST = os.getenv("EMAIL_HOST", "")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = _read_env("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = _env_bool("EMAIL_USE_TLS", True)
+EMAIL_TIMEOUT = 10
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.smtp.EmailBackend" if EMAIL_HOST else "django.core.mail.backends.console.EmailBackend",
+)
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL") or TEAM_EMAIL
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+# Per sender address per hour. Behind a proxy that hides client addresses this is a site-wide cap.
+INQUIRY_HOURLY_LIMIT = int(os.getenv("INQUIRY_HOURLY_LIMIT", "10"))
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",

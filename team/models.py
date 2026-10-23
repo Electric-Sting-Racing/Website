@@ -134,6 +134,33 @@ class Event(models.Model):
         return f"{self.title} — {self.date}"
 
 
+class Inquiry(models.Model):
+    TOPIC_CHOICES = [
+        ("join", "Joining the team"),
+        ("sponsor", "Sponsorship or in-kind support"),
+        ("alumni", "Alumni or mentoring"),
+        ("other", "Something else"),
+    ]
+
+    name = models.CharField(max_length=120)
+    email = models.EmailField()
+    organization = models.CharField(max_length=160, blank=True)
+    topic = models.CharField(max_length=20, choices=TOPIC_CHOICES, default="join")
+    message = models.TextField(max_length=3000)
+    created_at = models.DateTimeField(auto_now_add=True)
+    handled = models.BooleanField(default=False, help_text="Tick once someone has replied.")
+    # Salted hash of the sender's address, used only to throttle repeat submissions.
+    sender_hash = models.CharField(max_length=64, blank=True, editable=False, db_index=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "inquiry"
+        verbose_name_plural = "inquiries"
+
+    def __str__(self):
+        return f"{self.name} — {self.get_topic_display()}"
+
+
 class GalleryImage(models.Model):
     title = models.CharField(max_length=160)
     caption = models.CharField(max_length=240, blank=True)
