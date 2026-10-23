@@ -3,12 +3,14 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.views.decorators.http import require_GET
 
+from news.sitemaps import PostSitemap
+
 from .models import Car
 
 
 class StaticPageSitemap(Sitemap):
     def items(self):
-        return ["home", "roster", "cars", "sponsors", "events", "gallery", "contact"]
+        return ["home", "roster", "cars", "sponsors", "events", "gallery", "news", "contact"]
 
     def location(self, item):
         return reverse(item)
@@ -19,7 +21,7 @@ class CarSitemap(Sitemap):
         return Car.objects.all()
 
 
-SITEMAPS = {"pages": StaticPageSitemap, "cars": CarSitemap}
+SITEMAPS = {"pages": StaticPageSitemap, "cars": CarSitemap, "news": PostSitemap}
 
 DEFAULT_DESCRIPTION = "{site_name} — a student-built electric Formula SAE team."
 
@@ -31,6 +33,7 @@ PAGE_META = {
     "sponsors": ("Sponsor Electric Sting", "Sponsorship packages, benefits, and current partners for the Electric Sting Racing build."),
     "events": ("Events", "Design reviews, test days, and recruitment events open to the public."),
     "gallery": ("Gallery", "Photos of the people, tools, and small victories behind each build."),
+    "news": ("News", "Progress notes, test results, and the decisions behind the Electric Sting build."),
     "contact": ("Join the build", "Join the team, partner with us, or ask a question. No racing experience required."),
 }
 

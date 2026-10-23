@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }} | {{ site_name }}{% endblock %}
+{% block extra_head %}{% if preview %}<meta name="robots" content="noindex">{% endif %}<meta property="article:published_time" content="{{ post.published_at|date:'c' }}">{% endblock %}
+{% block content %}
+<article class="news-article">
+  <header class="news-article-hero dark-section hex-bg"><div class="wrap">
+    <a href="{% url 'news' %}" class="back-link">← All updates</a>
+    {% if preview %}<p class="news-preview" role="status">Preview: {{ post.status|lower }}. Only staff can see this page.</p>{% endif %}
+    <p class="eyebrow accent">{{ post.published_at|date:"F j, Y"|upper }}{% if post.author_name %} / {{ post.author_name|upper }}{% endif %}</p>
+    <h1>{{ post.title }}</h1>
+    <p class="page-hero-lede">{{ post.summary }}</p>
+  </div></header>
+  <div class="news-article-body"><div class="wrap"><div class="news-article-grid">
+    {% if post.cover_image_url %}<img class="news-cover" src="{{ post.cover_image_url }}" alt="{{ post.cover_image_alt }}" width="1200" height="630" decoding="async">{% endif %}
+    <div class="prose">{{ post.body_html }}</div>
+  </div></div></div>
+</article>
+{% endblock %}
