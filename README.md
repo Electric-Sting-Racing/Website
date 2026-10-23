@@ -202,6 +202,8 @@ Before `pg_restore --clean`, the script checks the connected target database nam
 
 `.github/workflows/staging-audit.yml` is manually triggered with a public HTTPS staging URL. It first checks that the home page and database-backed `/healthz/` endpoint return successfully, then runs Lighthouse in three runs and axe-core accessibility checks. Lighthouse lab data covers LCP and CLS; measure INP with real-user monitoring or field data before launch because lab runs cannot fully represent it.
 
+Workflow actions are pinned to full commit SHAs (the version is in the trailing comment) so a moved tag cannot change what CI runs. `.github/dependabot.yml` opens weekly pull requests for Python packages, the Docker base image, the PostgreSQL image, and the actions themselves; review each like any other change and let CI pass before merging. It deliberately skips major PostgreSQL and Python minor bumps, which need a planned migration.
+
 Run the same checks locally when the relevant tools are installed:
 
 ```bash

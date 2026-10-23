@@ -1,0 +1,40 @@
+version: 2
+
+# Weekly update PRs. Security advisories open their own PRs regardless of this schedule.
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      python-minor-and-patch:
+        update-types: [minor, patch]
+
+  # Workflows reference actions by commit SHA with a version comment; Dependabot updates both.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      # CI and the production image both run Python 3.12; move them together on purpose.
+      - dependency-name: python
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      # Major PostgreSQL upgrades need a dump and restore, and CI pins the 16 client.
+      - dependency-name: postgres
+        update-types: ["version-update:semver-major"]
