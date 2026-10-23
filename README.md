@@ -181,11 +181,19 @@ Copy backups to durable off-host storage. A backup is not considered useful unti
 
 ```bash
 BACKUP_FILE=backups/fsae-20260101T000000Z.dump \
-RESTORE_DATABASE_URL='postgresql://fsae_app:password@restore-host:5432/fsae_restore' \
+RESTORE_DATABASE_URL='postgresql://fsae_app@restore-host:5432/fsae_restore' \
 bash scripts/restore_test_postgres.sh
 ```
 
+Keep the password out of the URL: a password in a connection string shows in the process list while the restore runs and stays in shell history. Provide it through a `~/.pgpass` file, or `read -rs PGPASSWORD && export PGPASSWORD` in the same shell first. The script warns if it sees a password in either URL.
+
 Before `pg_restore --clean`, the script checks the connected target database name. It must end in `_restore`; when `DATABASE_URL` is set, a target with the same database name is refused. Use a dedicated disposable database and do not point it at production.
+
+## Security headers
+
+Every response carries a Content Security Policy and a Permissions-Policy (`fsae_site/middleware.py`), on top of HSTS, `nosniff`, `X-Frame-Options: DENY`, and a same-origin referrer policy. The policy blocks inline scripts and styles, so put new JavaScript in `static/js/` and new CSS in `static/css/`; a test fails if a template gains an inline `<script>`, `<style>`, `style=`, or `on…=` handler. Images may come from any `https:` URL because roster, sponsor, and gallery photos are entered in the admin. `/admin/` only gets the directives that cannot break Django's own admin pages.
+
+To try a stricter change safely, set `DJANGO_CSP_REPORT_ONLY=true`: browsers then log violations in the console without blocking anything. Allowed font hosts are listed in `CSP_STYLE_HOSTS` and `CSP_FONT_HOSTS` in `fsae_site/settings.py`; empty them once fonts are self-hosted. Session and CSRF cookies use the `__Host-` prefix in production, so the first deploy signs everyone out once. Admin sessions last 12 hours (`DJANGO_SESSION_COOKIE_AGE`), and requests that declare a body over 1 MiB get a 413 before reaching any view (nothing on the site accepts file uploads).
 
 ## Observability and operations
 

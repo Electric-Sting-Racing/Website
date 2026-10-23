@@ -80,6 +80,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "fsae_site.middleware.SecurityHeadersMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -173,9 +174,26 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https") if not DEBUG else 
 SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
+# Admin sessions end after a working day instead of two weeks.
+SESSION_COOKIE_AGE = int(os.getenv("DJANGO_SESSION_COOKIE_AGE", str(12 * 60 * 60)))
 CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SAMESITE = "Lax"
+if not DEBUG:
+    # The __Host- prefix makes browsers refuse these cookies unless they are Secure, host-only, and
+    # set for the whole site, so a sibling subdomain cannot overwrite them.
+    SESSION_COOKIE_NAME = "__Host-sessionid"
+    CSRF_COOKIE_NAME = "__Host-csrftoken"
 X_FRAME_OPTIONS = "DENY"
+
+# Content Security Policy (see fsae_site/middleware.py). Google Fonts hosts are allowed while the
+# stylesheet still loads from there; remove them once fonts are self-hosted.
+# Set DJANGO_CSP_REPORT_ONLY=true to log violations in the browser console without blocking.
+CSP_REPORT_ONLY = _env_bool("DJANGO_CSP_REPORT_ONLY", False)
+CSP_STYLE_HOSTS = ["https://fonts.googleapis.com"]
+CSP_FONT_HOSTS = ["https://fonts.gstatic.com"]
+
+# Reject oversized request bodies early. Admin forms and the contact form are far smaller.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]

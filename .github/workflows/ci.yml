@@ -116,7 +116,8 @@ jobs:
 
       - name: Restore test
         env:
-          RESTORE_DATABASE_URL: postgresql://fsae_app:ci-password@127.0.0.1:5432/fsae_restore
+          PGPASSWORD: ci-password
+          RESTORE_DATABASE_URL: postgresql://fsae_app@127.0.0.1:5432/fsae_restore
         run: |
           backup_file="$(find artifacts/backups -name '*.dump' -print -quit)"
           BACKUP_FILE="$backup_file" bash scripts/restore_test_postgres.sh
