@@ -30,22 +30,29 @@ Production settings fail closed: `DEBUG` defaults to false, PostgreSQL and allow
 
 `.env.example` leaves HSTS `includeSubDomains` and `preload` disabled because those settings require every subdomain to remain HTTPS-only. Enable them in a real deployment only after verifying that condition. CI separately checks a strict HTTPS deployment profile with both options enabled.
 
-Create the two local secret files only if your deployment host is not injecting them through a secret manager:
+Create the three local secret files only if your deployment host is not injecting them through a secret manager:
 
 ```bash
 cp .env.example .env
 mkdir -p secrets
 openssl rand -base64 48 > secrets/django_secret_key.txt
 openssl rand -base64 32 > secrets/db_password.txt
+openssl rand -hex 32 > secrets/db_web_password.txt
 chmod 600 secrets/*.txt
 ```
 
 Set `DJANGO_ALLOWED_HOSTS` and `DJANGO_CSRF_TRUSTED_ORIGINS` in `.env`, then run:
 
 ```bash
+docker compose up -d --wait db
+bash scripts/apply_postgres_roles.sh
 docker compose --profile ops run --rm migrate
 docker compose up -d web
 ```
+
+The database has two roles. `fsae_app` (`DB_USER`) owns the tables and is used only by `migrate` and backups. The site connects as `fsae_web` (`DB_WEB_USER`), which can read and write rows but cannot create, alter, or drop anything and cannot connect to other databases. `scripts/apply_postgres_roles.sh` creates it from `scripts/postgres/web_role.sql`. It reads `DB_NAME`, `DB_USER`, and `DB_WEB_USER` from `.env`, so you do not need to export anything, and it is safe to run again. If you skip it, the site cannot reach the database and `/healthz/` returns `503` with "password authentication failed for user fsae_web".
+
+The script also removes the default public access to every other database on the server, so run it again after creating one (for example a restore database). Tables added by later migrations are granted to `fsae_web` automatically, as long as migrations run through the `migrate` service (as the owner). If `permission denied for table` ever appears in the logs, run `bash scripts/apply_postgres_roles.sh` again.
 
 The web container listens on `127.0.0.1:8000`; put Nginx in front of it as planned. The proxy must pass `X-Forwarded-Proto: https`. Nginx should serve `/static/` directly when practical; WhiteNoise is included as a fallback.
 
@@ -154,7 +161,40 @@ python manage.py collectstatic --noinput
 sudo systemctl restart <gunicorn-service>
 ```
 
+Run the same role setup against your PostgreSQL server as its owner with `PSQL_COMMAND="psql -h <host>" bash scripts/apply_postgres_roles.sh`. Run gunicorn with `DB_USER=fsae_web` and the web password, and run `migrate` with the owner's credentials.
+
 Never run `seed_demo` against real team content.
+
+### Splitting the database roles (one time, servers set up before this change)
+
+Until now the site connected as `fsae_app`, the superuser that owns everything. This switches it to `fsae_web`. Downtime is only the usual `web` container recreate, about 5 to 15 seconds. PostgreSQL is not restarted, and no rows or tables are touched; only roles and permissions change.
+
+```bash
+# 0. Back up first (step 3 above).
+# 1. Create the web password (hex only).
+openssl rand -hex 32 > secrets/db_web_password.txt && chmod 600 secrets/db_web_password.txt
+# 2. Pull and build as usual (steps 4 and 5). The running site is not affected yet.
+# 3. Create the role and grants. The site keeps running as fsae_app meanwhile. Safe to repeat.
+bash scripts/apply_postgres_roles.sh
+# 4. Prove the role is restricted. Replace fsae if DB_NAME differs in .env.
+docker compose exec -T -e PGUSER=fsae_web -e PGDATABASE=fsae db sh -s < scripts/check_postgres_roles.sh
+# 5. Switch the site to the new role.
+docker compose up -d web
+# 6. Verify: the site connects as fsae_web and works.
+docker compose exec -T db psql -U fsae_app -d fsae -Atc \
+  "select usename, count(*) from pg_stat_activity where datname = 'fsae' group by 1"
+curl -s -o /dev/null -w '%{http_code}\n' -H 'Host: <public-hostname>' -H 'X-Forwarded-Proto: https' http://127.0.0.1:8000/healthz/
+```
+
+Then edit and save any record in `/admin/`. Step 4 needs no password because the container's local socket trusts its users. The check fails if `fsae_web` can create tables, is a superuser, lacks access to any table, or can connect to another database; the message says which.
+
+To point the site back at the owner, check out the previous commit and run `docker compose up -d web`. The old compose file uses `fsae_app` and `db_password`, and the extra role is harmless. To also remove the role, run this only after `web` no longer uses it:
+
+```bash
+docker compose exec -T db psql -X -v ON_ERROR_STOP=1 -U fsae_app -d fsae < scripts/postgres/web_role_rollback.sql
+```
+
+It stops without changing anything if `fsae_web` owns any object, because dropping the role would delete them.
 
 ## Site content
 
@@ -189,6 +229,8 @@ bash scripts/restore_test_postgres.sh
 Keep the password out of the URL: a password in a connection string shows in the process list while the restore runs and stays in shell history. Provide it through a `~/.pgpass` file, or `read -rs PGPASSWORD && export PGPASSWORD` in the same shell first. The script warns if it sees a password in either URL.
 
 Before `pg_restore --clean`, the script checks the connected target database name. It must end in `_restore`; when `DATABASE_URL` is set, a target with the same database name is refused. Use a dedicated disposable database and do not point it at production.
+
+Dumps leave out grants (`--no-privileges`), so after restoring into production run `bash scripts/apply_postgres_roles.sh` again to give `fsae_web` its access. Default privileges also cover tables that `pg_restore` creates as the owner, but running it again is harmless. Backups keep using the owner (`PGUSER=fsae_app`), not `fsae_web`.
 
 ## Security headers
 
@@ -225,4 +267,4 @@ npx --yes @axe-core/cli@4.10.2 https://staging.example.com
 2. Add the new season's `Car` record and tick **current**; the previous current car is cleared automatically. The car form's "Kept for later" section lists fields the public pages do not show yet, and you can leave them empty.
 3. Archive outgoing members: in the Team members list, tick them and choose **Archive selected members**. They leave the roster but their record stays; do not delete historical records.
 4. Update sponsors, events, and optional gallery additions in `/admin/`; the built-in team photos ship with the site.
-5. Rotate the technical owner, deployment secrets, and the notes in this README.
+5. Rotate the technical owner, deployment secrets, and the notes in this README. To rotate the web database password, write a new `secrets/db_web_password.txt` (`openssl rand -hex 32`), run `bash scripts/apply_postgres_roles.sh`, then `docker compose up -d --force-recreate web`.
