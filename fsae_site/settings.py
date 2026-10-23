@@ -1,6 +1,7 @@
 """Django settings for the handoff-friendly FSAE team website."""
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
@@ -68,13 +69,16 @@ TEAM_EMAIL = os.getenv("TEAM_EMAIL", "electricsting@csus.edu")
 TEAM_SEASON = os.getenv("TEAM_SEASON", "2026 — 2027")
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    "fsae_site.apps.SiteAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
+    "django_otp",
+    "django_otp.plugins.otp_totp",
+    "axes",
     "team",
     "news",
 ]
@@ -87,8 +91,10 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django_otp.middleware.OTPMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "axes.middleware.AxesMiddleware",
 ]
 
 ROOT_URLCONF = "fsae_site.urls"
@@ -155,6 +161,25 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+# Staff sign in to /admin/ with a password and a code from an authenticator app (see README, "Admin
+# accounts and sign-in"). Read on every request, so it can be switched off in an emergency.
+ADMIN_REQUIRE_OTP = _env_bool("DJANGO_ADMIN_REQUIRE_OTP", not DEBUG)
+OTP_TOTP_ISSUER = f"{TEAM_NAME.title()} admin"
+OTP_ADMIN_HIDE_SENSITIVE_DATA = True
+
+# Five wrong passwords lock that username out from that address for 30 minutes. The address comes
+# from X-Real-IP, which Nginx overwrites (see fsae_site/admin_site.py).
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = timedelta(minutes=30)
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
+AXES_RESET_ON_SUCCESS = True
+AXES_CLIENT_IP_CALLABLE = "fsae_site.admin_site.client_ip"
 
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = os.getenv("TZ", "America/Los_Angeles")
@@ -225,6 +250,7 @@ LOGGING = {
         "django": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
         "django.request": {"handlers": ["console"], "level": "ERROR", "propagate": False},
         "django.security": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+        "axes": {"handlers": ["console"], "level": "INFO", "propagate": False},
     },
 }
 

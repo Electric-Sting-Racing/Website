@@ -47,7 +47,7 @@ docker compose --profile ops run --rm migrate
 docker compose up -d web
 ```
 
-The web container listens on `127.0.0.1:8000`; put Nginx in front of it as planned. The proxy must pass `X-Forwarded-Proto: https`. Nginx should serve `/static/` directly when practical; WhiteNoise is included as a fallback.
+The web container listens on `127.0.0.1:8000`; put Nginx in front of it as planned. The proxy must pass `X-Forwarded-Proto: https` and `X-Real-IP $remote_addr`; the admin sign-in limit depends on the second (see [Admin accounts and sign-in](#admin-accounts-and-sign-in)). Nginx should serve `/static/` directly when practical; WhiteNoise is included as a fallback.
 
 The database is not published to the host. Compose uses a named PostgreSQL volume, waits for a database health check, and keeps the one-shot migration job separate from the web process. Run migrations explicitly during releases before switching traffic.
 
@@ -164,6 +164,67 @@ Never run `seed_demo` against real team content.
 - The sponsorship proposal PDF lives in `static/documents/` and its cover preview in `static/images/sponsorship-cover.webp`. Replace both together when the proposal changes.
 - Built-in team photos and short program copy (roadmap, metrics, engineering sections) live in `static/images/` and `team/content.py`.
 
+## Admin accounts and sign-in
+
+`/admin/` is the only place anyone signs in, so it has two protections. Five wrong passwords lock that username out from that address for 30 minutes, and staff also enter a six-digit code from an authenticator app (any TOTP app works). The code requirement is on in production and off in local development; `DJANGO_ADMIN_REQUIRE_OTP` controls it.
+
+Accounts are set up from the server, never through the admin, so turning this on does not depend on being able to sign in. Run these in the checkout on the server:
+
+```bash
+docker compose exec web python manage.py admin_mfa status            # who is set up
+docker compose exec web python manage.py admin_mfa enroll <username> # add an authenticator
+docker compose exec web python manage.py admin_mfa unlock <username> # clear a lockout
+docker compose exec web python manage.py admin_mfa reset <username>  # lost phone or departed admin
+```
+
+`enroll` prints a setup key and an `otpauth://` link. Type the key into the authenticator app, then enter the code the app shows. The key is a secret, so clear the terminal's scrollback afterwards. Use `enroll <username> --replace` to swap in a new phone. Signing in takes one step: username, password, and the code in the "OTP Token" box.
+
+- **Locked out.** Wait 30 minutes, or run `admin_mfa unlock <username>`. The lockout is per username and address, so one person's mistakes do not stop another admin.
+- **"Verification of the token is currently disabled."** Several wrong codes were entered for that account. Run `admin_mfa unlock <username>`. If you did not enter them, change that user's password too: someone knows it.
+- **Lost phone.** `admin_mfa reset <username>`, then `admin_mfa enroll <username>`.
+- **Emergency only.** If nobody can sign in, set `DJANGO_ADMIN_REQUIRE_OTP=false` in `.env` and run `docker compose up -d web`. That drops the code check but keeps the lockout. Turn it back on as soon as the accounts are fixed.
+
+### First deploy of this change
+
+Do these in the normal [update steps](#updating-production), so nobody is locked out:
+
+1. Run steps 1–6 (back up, pull, build, migrate). Migrating creates the sign-in tables.
+2. **Before step 7**, enroll every admin, then check that none are missing. The `migrate` image already has the new code, and `web` is still serving the old one:
+
+   ```bash
+   docker compose --profile ops run --rm migrate python manage.py admin_mfa enroll <username>
+   docker compose --profile ops run --rm migrate python manage.py admin_mfa status
+   ```
+
+3. Add the `X-Real-IP` line to Nginx (below), run `nginx -t`, and reload it.
+4. Run step 7. Existing admin sessions are sent to the sign-in page once.
+5. Sign in with a code. Then enter one wrong password from your own phone and run `docker compose exec web python manage.py axes_list_attempts`. It must show your public address, not one starting with `172.`. If it shows `172.`, Nginx is not sending `X-Real-IP`.
+
+### Nginx
+
+Every location that proxies to the site needs all three header lines; `proxy_set_header` is not inherited by a sibling `location`. `X-Real-IP` replaces any value the visitor sent, which is what makes the address trustworthy.
+
+```nginx
+location / {
+    proxy_pass http://127.0.0.1:8000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Real-IP $remote_addr;
+}
+
+# Optional: slow password guessing down before it reaches Django (the zone line goes in http {}).
+limit_req_zone $binary_remote_addr zone=admin_login:10m rate=10r/m;
+location = /admin/login/ {
+    limit_req zone=admin_login burst=5 nodelay;
+    proxy_pass http://127.0.0.1:8000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Real-IP $remote_addr;
+}
+```
+
+Django trusts `X-Real-IP` the same way it trusts `X-Forwarded-Proto`, so only Nginx should be able to reach the web container. Compose publishes its port on `127.0.0.1` only, and the database is the only other container on the Compose network. If a CDN or another proxy sits in front of Nginx, `$remote_addr` is that proxy: set `real_ip_header` and `set_real_ip_from` first so it holds the visitor's address. To limit `/admin/` to known networks, add `allow <address>; deny all;` to a `location /admin/` block. A wrong or missing `X-Real-IP` never opens a hole in the password check; it only makes the lockout less precise.
+
 ## Backups and restore testing
 
 `pg_dump` custom-format backups are created by `scripts/backup_postgres.sh`. It uses standard PostgreSQL connection variables and keeps fourteen days by default. Prefer `PGPASSFILE` or a secret-manager-injected credential over putting a password in shell history:
@@ -223,6 +284,6 @@ npx --yes @axe-core/cli@4.10.2 https://staging.example.com
 
 1. Export or back up the production database and verify a restore.
 2. Add the new season's `Car` record and tick **current**; the previous current car is cleared automatically. The car form's "Kept for later" section lists fields the public pages do not show yet, and you can leave them empty.
-3. Archive outgoing members: in the Team members list, tick them and choose **Archive selected members**. They leave the roster but their record stays; do not delete historical records.
+3. Archive outgoing members: in the Team members list, tick them and choose **Archive selected members**. They leave the roster but their record stays; do not delete historical records. Remove their admin sign-in codes with `admin_mfa reset <username>` and untick **Active** on their user.
 4. Update sponsors, events, and optional gallery additions in `/admin/`; the built-in team photos ship with the site.
 5. Rotate the technical owner, deployment secrets, and the notes in this README.
