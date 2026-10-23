@@ -9,9 +9,9 @@
   <meta name="description" content="{{ meta_description }}">
   <title>{% block title %}{{ site_name }} | Electric Formula SAE{% endblock %}</title>
   <link rel="icon" type="image/webp" href="{% static 'images/electric-sting-mascot-v4.webp' %}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="{% static 'fonts/SpaceGrotesk-var-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'fonts/BarlowCondensed-700-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'fonts/DMMono-400-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/site-v5.css' %}">
   <script src="{% static 'js/site-v5.js' %}" defer></script>
   {% block canonical %}<link rel="canonical" href="{{ canonical_url }}">{% endblock %}
