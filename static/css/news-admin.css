@@ -1,0 +1,15 @@
+/* Keeps the post preview in the admin readable: Django's admin styles would otherwise turn
+   headings into banners, hide list bullets, and let images overflow the form. */
+.news-preview-pane { max-width: 760px; line-height: 1.6; }
+.news-preview-pane img { max-width: 100%; height: auto; }
+.news-preview-pane h2, .news-preview-pane h3, .news-preview-pane h4 {
+  margin: 1.2em 0 .4em; padding: 0; color: inherit; background: none; font-weight: 700;
+}
+.news-preview-pane h2 { font-size: 1.5em; }
+.news-preview-pane h3 { font-size: 1.25em; }
+.news-preview-pane h4 { font-size: 1.1em; }
+.news-preview-pane ul { list-style: disc !important; padding-left: 1.5em; }
+.news-preview-pane ol { list-style: decimal !important; padding-left: 1.5em; }
+.news-preview-pane blockquote { margin-left: 0; padding-left: 1em; border-left: 3px solid var(--hairline-color, #ccc); }
+.news-preview-pane table { border-collapse: collapse; }
+.news-preview-pane th, .news-preview-pane td { padding: 4px 8px; border: 1px solid var(--hairline-color, #ccc); }
