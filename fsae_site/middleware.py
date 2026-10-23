@@ -8,7 +8,10 @@ PERMISSIONS_POLICY = (
 
 
 def build_csp():
-    """Content Security Policy for public pages. The site uses no inline scripts or styles."""
+    """Content Security Policy for every page, including /admin/.
+
+    Neither the site nor Django's admin uses inline scripts, inline styles or event handlers.
+    """
     directives = {
         "default-src": "'self'",
         "script-src": "'self'",
@@ -29,9 +32,8 @@ def build_csp():
     return policy
 
 
-# Django's admin still ships a few inline styles and scripts, so it only gets the directives
-# that cannot break it.
-ADMIN_CSP = "object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+# Always enforced on /admin/, even while a policy is being tried in report-only mode.
+ADMIN_BASELINE_CSP = "object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
 
 
 class SecurityHeadersMiddleware:
@@ -51,15 +53,12 @@ class SecurityHeadersMiddleware:
             response = HttpResponse("Request too large.", status=413, content_type="text/plain")
         else:
             response = self.get_response(request)
-        if request.path.startswith("/admin/"):
-            policy, header = ADMIN_CSP, "Content-Security-Policy"
+        policy = build_csp()
+        if settings.CSP_REPORT_ONLY:
+            response.headers.setdefault("Content-Security-Policy-Report-Only", policy)
+            if request.path.startswith("/admin/"):
+                response.headers.setdefault("Content-Security-Policy", ADMIN_BASELINE_CSP)
         else:
-            header = (
-                "Content-Security-Policy-Report-Only"
-                if settings.CSP_REPORT_ONLY
-                else "Content-Security-Policy"
-            )
-            policy = build_csp()
-        response.headers.setdefault(header, policy)
+            response.headers.setdefault("Content-Security-Policy", policy)
         response.headers.setdefault("Permissions-Policy", PERMISSIONS_POLICY)
         return response

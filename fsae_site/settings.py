@@ -186,12 +186,12 @@ if not DEBUG:
     CSRF_COOKIE_NAME = "__Host-csrftoken"
 X_FRAME_OPTIONS = "DENY"
 
-# Content Security Policy (see fsae_site/middleware.py). Google Fonts hosts are allowed while the
-# stylesheet still loads from there; remove them once fonts are self-hosted.
+# Content Security Policy (see fsae_site/middleware.py). Fonts are self-hosted, so styles and fonts
+# load only from this site. Add a host here only if a page starts loading CSS or fonts from it.
 # Set DJANGO_CSP_REPORT_ONLY=true to log violations in the browser console without blocking.
 CSP_REPORT_ONLY = _env_bool("DJANGO_CSP_REPORT_ONLY", False)
-CSP_STYLE_HOSTS = ["https://fonts.googleapis.com"]
-CSP_FONT_HOSTS = ["https://fonts.gstatic.com"]
+CSP_STYLE_HOSTS = []
+CSP_FONT_HOSTS = []
 
 # Reject oversized request bodies early. Admin forms and the contact form are far smaller.
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024
